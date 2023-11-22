@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Generatd by ChatGPT
+# 1. 接受参数并赋值给变量 protocol_ver，若未传参则提示用户并退出
+if [ $# -eq 0 ]
+then
+  echo "Please give in the param!"
+  exit 1
+else
+  protocol_ver=$1
+fi
+
+# 2. 检查目录 Protobuf-$protocol_ver/Protos 是否存在，不存在则提示用户并退出
+if [ ! -d "Protobuf-$protocol_ver/Protos" ]
+then
+  echo "Protobuf-$protocol_ver/Protos doesn't exist!"
+  exit 1
+fi
+
+# 3. 创建文件夹 Protobuf-$protocol_ver/Compiled
+mkdir -p "Protobuf-$protocol_ver/Compiled"
+
+# 4. 编译proto文件
+# echo "Start compiling protos..."
+# protoc --proto_path="Protobuf-$protocol_ver/Protos" --csharp_out="Protobuf-$protocol_ver/Compiled" "Protobuf-$protocol_ver/Protos/*.proto"
+
+# 5. 创建文件夹
+mkdir -p "EasyProtobuf Build/$protocol_ver/bin"
+
+# 6. Call dotnet publish and pass the version attribute
+echo "Start building program..."
+dotnet publish EasyProtobuf.csproj -c Release -p:protobuf_version="$protocol_ver" -o "EasyProtobuf Build/$protocol_ver/bin"
+
+# 7. Check if the publish was successful or not
+if [ $? -eq 0 ]
+then
+  echo "Publish Successful."
+else
+  echo "Publish Failed."
+  exit 1
+fi
+
+# 8. Write run.sh and run-win.bat
+cat > "EasyProtobuf Build/$protocol_ver/run" <<EOF
+#!/bin/bash
+export EASYPROTOBUF_PROTOCOL_VERSION=$protocol_ver
+dotnet ./bin/EasyProtobuf.dll \$*
+EOF
+echo "run shell script Generated at EasyProtobuf Build/$protocol_ver."
+chmod +x "EasyProtobuf Build/$protocol_ver/run"
+
+cat > "EasyProtobuf Build/$protocol_ver/run.bat" <<EOF
+set EASYPROTOBUF_PROTOCOL_VERSION=$protocol_ver
+dotnet ./bin/EasyProtobuf.dll %*
+EOF
+echo "run.bat Generated at EasyProtobuf Build/$protocol_ver."
+
+# Display success message and exit
+echo "Done!"
+exit 0
