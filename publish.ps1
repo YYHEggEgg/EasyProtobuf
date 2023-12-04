@@ -37,7 +37,10 @@ if ($LASTEXITCODE -eq 0) {
 }
 
 # 8. Copy the config and resources
-Copy-Item config.json "EasyProtobuf Build/$protocol_ver/config.json" -force
+if (!Test-Path -Path "config-$protocol_ver.json" -PathType Leaf) {
+  Copy-Item "config_example.json" "config-$protocol_ver.json"
+}
+Copy-Item "config-$protocol_ver.json" "EasyProtobuf Build/$protocol_ver/config-$protocol_ver.json" -force
 Copy-Item resources "EasyProtobuf Build/$protocol_ver/resources" -recurse -force
 
 # 9. Write run.sh and run-win.bat

@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Google.Protobuf;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using YYHEggEgg.EasyProtobuf.Commands;
 using YYHEggEgg.EasyProtobuf.Configuration;
@@ -37,7 +38,8 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             Log.Info($"Thanks for using EasyProtobuf! Exiting...");
             Environment.Exit(1);
         };
-        Log.Info($"Welcome to easyprotobuf! Protobuf version: {protobuf_version}.");
+        string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3);
+        Log.Info($"Welcome to EasyProtobuf v{version ?? "<unknown>"}! Protobuf version: {protobuf_version}.");
 
         Tools.RunBackgroundUpdateCheck();
 
@@ -77,12 +79,6 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
         ResourcesLoader.CheckForRequiredResources();
         await ResourcesLoader.Load();
 
-        Log.Info("Initializing Regex workers, it will take some time...");
-        base64worker = new("^.*[g-zG-Z].*$", RegexOptions.Compiled | RegexOptions.Singleline,
-            TimeSpan.FromMilliseconds(2000));
-        hexworker = new("^([A-Z0-9]|[a-z0-9])*$", RegexOptions.Compiled | RegexOptions.Singleline,
-            TimeSpan.FromMilliseconds(3000));
-
         await Start();
     }
 
@@ -112,83 +108,50 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
         _logger.LogInfo("You can also paste json data to get its serialized data.");
 
         _logger.LogInfo(EasyInput.MultipleInputNotice);
-        string? input = ConsoleWrapper.ReadLine();
-        byte[]? bytes = null;
-        string? extjson = null;
-        #region Strictly defined
-        if (input.StartsWith("h-"))
-        {
-            _logger.LogInfo("User defined HEX input!");
-            bytes = Convert.FromHexString(input.Substring(2));
-        }
-        else if (input.StartsWith("b-"))
-        {
-            _logger.LogInfo("User defined Base64 input!");
-            bytes = Convert.FromBase64String(input.Substring(2));
-        }
-        else if (input.StartsWith("j-"))
-        {
-            _logger.LogInfo("User defined Json input!");
-            extjson = input.Substring(2);
-        }
-        #endregion
-        #region Auto detect
-        else
-        {
-            string str = input.Trim();
-            if ((str.StartsWith('{') && str.EndsWith('}')) ||
-                (str.StartsWith('[') && str.EndsWith(']')))
-            {
-                _logger.LogInfo("Detected Json input!");
-                extjson = str;
-            }
-            else if (isBase64(str))
-            {
-                _logger.LogInfo("Detected Base64 input!");
-                bytes = Convert.FromBase64String(str);
-            }
-            else
-            {
-                _logger.LogInfo("Detected Hex input!");
-                bytes = Convert.FromHexString(str);
-            }
-        }
-        #endregion
+        var raw_text = await ConsoleWrapper.ReadLineAsync(false);
+        var res = EasyInput.TryPreProcess(raw_text);
 
-        string? res = null;
+        string? stroutput = null;
         IMessage? msg = null;
-        if (bytes != null)
+        switch (res.InputType)
         {
-            msg = ProtoSerialize.Deserialize(prototype, bytes);
-            if (msg == null)
-            {
-                _logger.LogInfo($"Deserialized message = null");
-                _logger.LogWarn("Serialization/Deserialization probably failed!");
-                return;
-            }
-            res = JsonFormatter.Default.Format(msg);
-            _logger.LogInfo($"Converted Json:{Environment.NewLine}{res}");
-        }
-        else if (extjson != null)
-        {
-            msg = ProtoSerialize.Serialize(prototype, extjson);
-            if (msg == null)
-            {
-                _logger.LogInfo($"Serialized message = null");
-                _logger.LogWarn("Serialization/Deserialization probably failed!");
-                return;
-            }
-            res = Convert.ToBase64String(msg.ToByteArray());
-            _logger.LogInfo($"Serialized Base64:{Environment.NewLine}{res}");
+            case EasyInputType.Base64:
+            case EasyInputType.Hex:
+                var bytes = res.ToByteArray();
+                msg = ProtoSerialize.Deserialize(prototype, bytes);
+                if (msg == null)
+                {
+                    _logger.LogInfo($"Deserialized message = null");
+                    _logger.LogWarn("Serialization/Deserialization probably failed!");
+                    return;
+                }
+                stroutput = JsonFormatter.Default.Format(msg);
+                _logger.LogInfo($"Converted Json:{Environment.NewLine}{stroutput}");
+                break;
+            case EasyInputType.Json:
+                msg = ProtoSerialize.Serialize(prototype, res.ProcessedString ?? string.Empty);
+
+                if (msg == null)
+                {
+                    _logger.LogInfo($"Serialized message = null");
+                    _logger.LogWarn("Serialization/Deserialization probably failed!");
+                    return;
+                }
+                stroutput = Convert.ToBase64String(msg.ToByteArray());
+                _logger.LogInfo($"Serialized Base64:{Environment.NewLine}{stroutput}");
+                break;
+            default:
+                _logger.LogErro($"Can't recognize the input type! Please try to specify the input type manually and try again.");
+                break;
         }
 
-        if (res == null || msg == null)
+        if (stroutput == null || msg == null)
         {
             _logger.LogWarn("Serialization/Deserialization probably failed!");
         }
         else
         {
-            await Tools.SetClipBoardAsync(res);
+            await Tools.SetClipBoardAsync(stroutput);
 
             var unksize = Tools.GetUnknownFieldsSize(msg, prototype);
             if (unksize != 0)
@@ -196,33 +159,6 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
                 _logger.LogWarn($"Message has unknown fields that aren't defined in your proto: {unksize}/{msg.CalculateSize()} bytes. Please go to protobuf decode-raw tools for more information.");
             }
         }
-    }
-
-    // 只要字符串包含g/G以后的字母（“以后”遵循字母表顺序，无论大小写，包含g/G）一个及以上，则一定为base64串
-    static Regex base64worker;
-    // 如果字符串的字母只同时为大写/小写（也就是说，字符串中除去数字以后，剩下的字符要么全为大写要么全为小写），则判定为HEX串
-    static Regex hexworker;
-
-    static bool isBase64(string input)
-    {
-        if (input.EndsWith('=')) return true;
-        if (input.Contains('+') || input.Contains('/')) return true;
-        try
-        {
-            if (base64worker.IsMatch(input)) return true;
-        }
-        catch (RegexMatchTimeoutException) { }
-
-        try
-        {
-            if (!hexworker.IsMatch(input)) return true;
-        }
-        catch (RegexMatchTimeoutException ex)
-        {
-            throw new RegexMatchTimeoutException("Auto-detect input format timeout of 5s. " +
-                "Please explicitly specifiy the input format by adding '<color=Yellow>b-</color>' or '<color=Yellow>h-</color>' at the start and retry.", ex);
-        }
-        return false;
     }
 
     private static List<CommandHandlerBase> ConfigureCommands()
@@ -238,7 +174,6 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
         return handlers;
     }
 
-#pragma warning disable CS8618
     static EasyProtobufProgram()
     {
         // StopProgram is now built-in command
@@ -248,7 +183,6 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
         handlers.AddRange(cmdlist);
         protobufWorker = new();
     }
-#pragma warning restore CS8618
 
     private static StopCommand stopProgram;
     private static EasyProtobufProgram protobufWorker;

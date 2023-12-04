@@ -41,7 +41,11 @@ else
 fi
 
 # 8. Copy the config and resources
-cp -f config.json "EasyProtobuf Build/$protocol_ver/config.json"
+if [ ! -f "config-$protocol_ver.json" ]
+then
+  cp "config_example.json" "config-$protocol_ver.json"
+fi
+cp -f "config-$protocol_ver.json" "EasyProtobuf Build/$protocol_ver/config-$protocol_ver.json"
 cp -r -f resources "EasyProtobuf Build/$protocol_ver/resources"
 
 # 9. Write run.sh and run-win.bat
