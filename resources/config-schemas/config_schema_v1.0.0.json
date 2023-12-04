@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/YYHEggEgg/EasyProtobuf/blob/main/resources/config-schemas/config_schema_v1.0.0.json",
+  "type": "object",
+  "properties": {
+    "ConfigVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "The config version. ",
+      "const": "1.0.0"
+    },
+    "RSAKeysDirectoryName": {
+      "type": "string",
+      "description": "The name of the directory in 'resources' where the RSA Keys is stored.",
+      "default": "rsakeys"
+    },
+    "EasyProtobufProgram": {
+      "description": "Configure options for the default protobuf works.",
+      "type": "object",
+      "properties": {
+        "ProtoRootNamespace": {
+          "description": "The base namespace to query the Proto.",
+          "type": "string"
+        }
+      }
+    },
+    "CurrRegionCmds": {
+      "description": "Configure options for 'dcurr' and 'gencur' command.",
+      "type": "object",
+      "properties": {
+        "BasedProto": {
+          "description": "The Proto that the 'content' in JSON is based on.",
+          "type": "string",
+          "default": "QueryCurrRegionHttpRsp"
+        }
+      }
+    }
+  },
+  "required": [
+    "ConfigVersion",
+    "RSAKeysDirectoryName",
+    "CurrRegionCmds"
+  ]
+}

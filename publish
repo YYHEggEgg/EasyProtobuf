@@ -40,7 +40,11 @@ else
   exit 1
 fi
 
-# 8. Write run.sh and run-win.bat
+# 8. Copy the config and resources
+cp -f config.json "EasyProtobuf Build/$protocol_ver/config.json"
+cp -r -f resources "EasyProtobuf Build/$protocol_ver/resources"
+
+# 9. Write run.sh and run-win.bat
 cat > "EasyProtobuf Build/$protocol_ver/run" <<EOF
 #!/bin/bash
 export EASYPROTOBUF_PROTOCOL_VERSION=$protocol_ver

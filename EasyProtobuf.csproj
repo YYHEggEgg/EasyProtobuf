@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <MainEntryPoint>YYHEggEgg.EasyProtobuf.EasyProtobufProgram</MainEntryPoint>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="EggEgg.CSharp-Logger" Version="4.0.1" />
     <PackageReference Include="Google.Protobuf" Version="3.25.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NJsonSchema" Version="10.9.0" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="TextCopy" Version="6.2.1" />
     <PackageReference Include="Grpc.Tools" Version="2.50.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -30,10 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protobuf-$(protobuf_version)/Protos/*.proto"
-              ProtoRoot="Protobuf-$(protobuf_version)/Protos"
-              GrpcServices="None"
-              OutputDir="Protobuf-$(protobuf_version)/Compiled" />
+    <Protobuf Include="Protobuf-$(protobuf_version)/Protos/*.proto" ProtoRoot="Protobuf-$(protobuf_version)/Protos" GrpcServices="None" OutputDir="Protobuf-$(protobuf_version)/Compiled" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,11 @@
+{
+  "$schema": "resources/config-schemas/config_schema_latest.json",
+  "ConfigVersion": "1.0.0",
+  "RSAKeysDirectoryName": "rsakeys",
+  "EasyProtobufProgram": {
+    // "ProtoRootNamespace": "MiHomo.Protos"
+  },
+  "CurrRegionCmds": {
+    "BasedProto": "QueryCurrRegionHttpRsp"
+  }
+}

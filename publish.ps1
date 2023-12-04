@@ -36,7 +36,11 @@ if ($LASTEXITCODE -eq 0) {
   exit 1
 }
 
-# 8. Write run.sh and run-win.bat
+# 8. Copy the config and resources
+Copy-Item config.json "EasyProtobuf Build/$protocol_ver/config.json" -force
+Copy-Item resources "EasyProtobuf Build/$protocol_ver/resources" -recurse -force
+
+# 9. Write run.sh and run-win.bat
 Set-Content -Path "EasyProtobuf Build/$protocol_ver/run" -Value @"
 #!/bin/bash
 export EASYPROTOBUF_PROTOCOL_VERSION=$protocol_ver
