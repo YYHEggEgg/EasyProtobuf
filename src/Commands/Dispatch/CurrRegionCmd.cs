@@ -34,11 +34,21 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             {
                 _logger.LogErro($"Input param 2 should be a valid json!");
             }
-            (IMessage? currres, bool? verificationOK) = (null, null);
+            string? res = null;
+            bool? verificationOK;
             try
             {
-                (currres, verificationOK) = CurrExtend.GetCurrFromJson(conf.BaseProto, read.ProcessedString,
-                    Resources.CPri[key_id], Resources.OfficialSPub[key_id]);
+                if (conf.UseProtoCurr)
+                {
+                    (IMessage? currres, verificationOK) = CurrExtend.GetCurrFromJson(conf.BaseProto, read.ProcessedString,
+                        Resources.CPri[key_id], Resources.OfficialSPub[key_id]);
+                    res = JsonFormatter.Default.Format(currres);
+                }
+                else
+                {
+                    (res, verificationOK) = CurrExtend.GetJsonCurrFromJson(read.ProcessedString,
+                        Resources.CPri[key_id], Resources.OfficialSPub[key_id]);
+                }
             }
             catch (JsonReaderException jex)
             {
@@ -59,7 +69,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                     $"or you provided false query_cur_region json.");
                 return;
             }
-            var res = JsonFormatter.Default.Format(currres);
+            
             if (string.IsNullOrWhiteSpace(res)) res = "<empty content or json/protobuf format failure>";
             _logger.LogInfo($"Decrypted json content: \n{res}");
             if (verificationOK == true)
@@ -100,29 +110,36 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             {
                 _logger.LogErro($"Input param 2 should be a valid json!");
             }
-            IMessage? curr = null;
+            string? res = null;
             try
             {
-                curr = ProtoSerialize.Serialize(conf.BaseProto, read.ProcessedString ?? string.Empty);
+                if (conf.UseProtoCurr)
+                {
+                    res = ProtoSerialize.Serialize(conf.BaseProto, read.ProcessedString ?? string.Empty)
+                        ?.GetCurrJson(Resources.CPri[key_id], Resources.LocalSPri[key_id]);
+                }
+                else
+                {
+                    res = CurrExtend.GetJsonFromCurrJson(read.ProcessedString ?? string.Empty, Resources.CPri[key_id], Resources.LocalSPri[key_id]);
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogErroTrace(ex, 
-                    $"Protobuf serialization failed. ");
+                    $"Protobuf serialization / JSON read failed. ");
                 _logger.LogWarn($"It may because the json isn't valid." +
                     $"It's recommended to modify based on the result" +
                     $"from json protobuf from 'util dcurr' command.");
                 return;
             }
-            if (curr == null)
+            if (res == null)
             {
-                _logger.LogErro($"Protobuf serialization failed (no exceptions thrown).");
+                _logger.LogErro($"Protobuf serialization / JSON read failed (no exceptions thrown).");
                 return;
             }
 
             try
             {
-                var res = curr.GetCurrJson(Resources.CPri[key_id], Resources.LocalSPri[key_id]);
                 _logger.LogInfo($"Result: \n{res}");
                 await Tools.SetClipBoardAsync(res);
             }

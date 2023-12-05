@@ -499,5 +499,17 @@ internal static class Tools
         }
         return key;
     }
+    
+    public static byte[] Generate4096KeyByMT19937_Sleep(ulong seed)
+    {
+        MT19937_64 mt2 = new(seed);
+        byte[] key = new byte[4096];
+        for (int i = 0; i < key.Length; i += 8)
+        {
+            ulong newui64 = mt2.Int64();
+            key.SetUInt64(i, newui64);
+        }
+        return key;
+    }
     #endregion
 }

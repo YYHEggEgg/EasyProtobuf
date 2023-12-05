@@ -31,9 +31,14 @@ if ($LASTEXITCODE -eq 0) {
   exit 1
 }
 
-# 7. Set Protobuf Version and Enable HotPatch
+# 7. Use the default config
+if (!Test-Path -Path "config-$protocol_ver.json" -PathType Leaf) {
+  Copy-Item "config_example.json" "config-$protocol_ver.json"
+}
+
+# 8. Set Protobuf Version and Enable HotPatch
 $env:EASYPROTOBUF_PROTOCOL_VERSION=$protocol_ver
 $env:COMPLUS_ForceENC=1
 
-# 8. Run 
+# 9. Run 
 dotnet run --no-build

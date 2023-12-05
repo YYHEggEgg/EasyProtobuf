@@ -13,7 +13,9 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             EasyInput.MultipleInputNotice +
             $"{Environment.NewLine}" +
             $"{Environment.NewLine}" +
-            $"Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>";
+            $"Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>{Environment.NewLine}" +
+            $"{Environment.NewLine}" +
+            $"ec2b encrypt <uint64_t_seed>";
 
         public override void CleanUp()
         {
@@ -41,6 +43,11 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                     var hexkey = Convert.ToHexString(Ec2b.Decrypt(read.ToByteArray()));
                     _logger.LogInfo(hexkey);
                     await Tools.SetClipBoardAsync(hexkey);
+                    break;
+                case "encrypt":
+                    var hexseed = Convert.ToHexString(Ec2b.Encrypt(ulong.Parse(args[1])));
+                    _logger.LogInfo(hexseed);
+                    await Tools.SetClipBoardAsync(hexseed);
                     break;
                 default:
                     _logger.LogErro($"Usage: {Usage}");

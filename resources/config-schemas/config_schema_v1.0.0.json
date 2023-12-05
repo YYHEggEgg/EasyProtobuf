@@ -28,12 +28,46 @@
       "description": "Configure options for 'dcurr' and 'gencur' command.",
       "type": "object",
       "properties": {
+        "UseProtoCurr": {
+          "type": "boolean",
+          "description": "Transfer the input curr json to a Protobuf or a JSON."
+        },
         "BasedProto": {
           "description": "The Proto that the 'content' in JSON is based on.",
           "type": "string",
           "default": "QueryCurrRegionHttpRsp"
         }
-      }
+      },
+      "dependencies": {
+        "UseProtoCurr": {
+          "oneOf": [
+            {
+              "properties": {
+                "UseProtoCurr": {
+                  "const": false
+                }
+              },
+              "required": [
+                "UseProtoCurr"
+              ]
+            },
+            {
+              "properties": {
+                "UseProtoCurr": {
+                  "const": true
+                }
+              },
+              "required": [
+                "UseProtoCurr",
+                "BasedProto"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "UseProtoCurr"
+      ]
     }
   },
   "required": [

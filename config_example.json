@@ -6,6 +6,7 @@
     // "ProtoRootNamespace": "MiHomo.Protos"
   },
   "CurrRegionCmds": {
+    "UseProtoCurr": true,
     "BasedProto": "QueryCurrRegionHttpRsp"
   }
 }
