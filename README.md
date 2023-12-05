@@ -30,27 +30,26 @@ A easy tool for protobuf related operations.
 
 - Build First
 - Start with `./run`
-- Type the proto name
+- Type the proto name or `help` to get command list
 - Paste base64 string / HEX string / Json string (support auto-detect)
 - Profit
 
 ## Notes
-- **Don't paste `query_cur_region` content here!** It's RSA encrypted.
-- You can copy the built assets to anywhere, without neither original protos nor compiled code. But along with `bin` folder and two `run` scripts!
-- If your protos contains `package` or `option csharp_namespace`, remove them.
-  like: 
+- **Don't paste `query_cur_region` content here!** It's RSA encrypted.  
+  You can use `dcurr` and `gencur` command to do related options.
+- You can copy the built assets to anywhere, without neither original protos nor compiled code. But along with everything under the folder!
+- If your protos contains `package` option, please enter the namespace into `config-<protobuf>.json`. e.g. If your proto has: 
 
+  ```proto
+  package miHomo.Protos;
   ```
-  package CrepeSR.Proto;
-  option csharp_namespace = "Grasscutter.Proto";
-  ```
 
-  You may open VSCode, select "replace all" and remove them.      
-  If you want to use them with package name, just type the name with namespace:
+  Then just use:
 
-  ```log
-  09:39:48 <Info> ----------New Work (Protobuf version: hkrpg_0.7_live)----------
-  09:39:48 <Info> Type the proto name here:
-  CrepeSR.Proto.PlayerLoginCsReq
-  09:40:29 <Info> Well done! The proto exists.
+  ```json
+  {
+    "EasyProtobufProgram": {
+      "ProtoRootNamespace": "MiHomo.Protos"
+    }
+  }
   ```
