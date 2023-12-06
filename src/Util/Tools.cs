@@ -60,22 +60,43 @@ internal static class Tools
     /// <returns></returns>
     public static RSAUtilBase LoadRSAKey(string rsaKey, int keySize = 2048)
     {
+        var keyType = TreatRSAKeyType(rsaKey);
         // PKCS8 Padding
-        if (rsaKey.StartsWith("-----BEGIN PUBLIC KEY-----"))
+        if (keyType == (RsaKeyType.Pkcs8 | RsaKeyType.Public))
             return new RsaPkcs8Util(publicKey: rsaKey, keySize: keySize);
-        else if (rsaKey.StartsWith("-----BEGIN PRIVATE KEY-----"))
+        else if (keyType == (RsaKeyType.Pkcs8 | RsaKeyType.Private))
             return new RsaPkcs8Util(privateKey: rsaKey, keySize: keySize);
         // PKCS1 Padding
-        else if (rsaKey.StartsWith("-----BEGIN RSA PUBLIC KEY-----"))
+        else if (keyType == (RsaKeyType.Pkcs1 | RsaKeyType.Public))
             return new RsaPkcs1Util(publicKey: rsaKey, keySize: keySize);
-        else if (rsaKey.StartsWith("-----BEGIN RSA PRIVATE KEY-----"))
+        else if (keyType == (RsaKeyType.Pkcs1 | RsaKeyType.Private))
             return new RsaPkcs1Util(privateKey: rsaKey, keySize: keySize);
+        // .NET XML Format
+        else if (keyType == (RsaKeyType.Xml | RsaKeyType.Public))
+            return new RsaXmlUtil(publicKey: rsaKey, keySize: keySize);
+        else if (keyType == (RsaKeyType.Xml | RsaKeyType.Private))
+            return new RsaXmlUtil(privateKey: rsaKey, keySize: keySize);
+        else throw new ArgumentException("Invalid RSA Key!", nameof(rsaKey));
+    }
+
+    public static RsaKeyType TreatRSAKeyType(string rsaKey)
+    {
+        // PKCS8 Padding
+        if (rsaKey.StartsWith("-----BEGIN PUBLIC KEY-----"))
+            return RsaKeyType.Pkcs8 | RsaKeyType.Public;
+        else if (rsaKey.StartsWith("-----BEGIN PRIVATE KEY-----"))
+            return RsaKeyType.Pkcs8 | RsaKeyType.Private;
+        // PKCS1 Padding
+        else if (rsaKey.StartsWith("-----BEGIN RSA PUBLIC KEY-----"))
+            return RsaKeyType.Pkcs1 | RsaKeyType.Public;
+        else if (rsaKey.StartsWith("-----BEGIN RSA PRIVATE KEY-----"))
+            return RsaKeyType.Pkcs1 | RsaKeyType.Private;
         // .NET XML Format
         else if (rsaKey.StartsWith("<RSAKeyValue>"))
         {
             if (rsaKey.Contains("<InverseQ>"))
-                return new RsaXmlUtil(privateKey: rsaKey, keySize: keySize);
-            else return new RsaXmlUtil(publicKey: rsaKey, keySize: keySize);
+                return RsaKeyType.Xml | RsaKeyType.Private;
+            else return RsaKeyType.Xml | RsaKeyType.Public;
         }
         else throw new ArgumentException("Invalid RSA Key!", nameof(rsaKey));
     }
@@ -442,17 +463,6 @@ internal static class Tools
     public static void RunBackgroundUpdateCheck()
     {
         _ = Task.Run(UpdateCheck);
-    }
-
-    private class VersionInfo
-    {
-        public string? CurrentVersion;
-        /// <summary>
-        /// Only when the current version is earlier
-        /// than this will the update notice be raised
-        /// as a warning.
-        /// </summary>
-        public string? EarliestStableVersion;
     }
 
     public const string FriendlyProgramName = "EasyProtobuf";
