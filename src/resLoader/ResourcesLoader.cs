@@ -2,6 +2,7 @@
 using YYHEggEgg.EasyProtobuf.Configuration;
 using YYHEggEgg.Logger;
 using YYHEggEgg.EasyProtobuf.Util;
+using XC.RSAUtil;
 
 namespace YYHEggEgg.EasyProtobuf.resLoader;
 
@@ -110,7 +111,7 @@ public static class ResourcesLoader
                 try
                 {
                     string pemKey = await File.ReadAllTextAsync(file);
-                    Resources.CPri.Add(id, Tools.LoadRSAKey(pemKey));
+                    Resources.CPri.Add(id, RSAUtilBase.LoadRSAKey(pemKey));
                 }
                 catch (Exception ex)
                 {
@@ -129,7 +130,7 @@ public static class ResourcesLoader
                 try
                 {
                     string pemKey = await File.ReadAllTextAsync(file);
-                    Resources.OfficialSPub.Add(id, Tools.LoadRSAKey(pemKey));
+                    Resources.OfficialSPub.Add(id, RSAUtilBase.LoadRSAKey(pemKey));
                 }
                 catch (Exception ex)
                 {
@@ -149,7 +150,7 @@ public static class ResourcesLoader
                 try
                 {
                     string pemKey = await File.ReadAllTextAsync(file);
-                    Resources.LocalSPri.Add(id, Tools.LoadRSAKey(pemKey));
+                    Resources.LocalSPri.Add(id, RSAUtilBase.LoadRSAKey(pemKey));
                 }
                 catch (Exception ex)
                 {

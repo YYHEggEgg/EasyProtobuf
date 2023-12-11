@@ -12,7 +12,7 @@ public class ProtobufCmdConfig_v1_0_0
 public class CurrRegionCmdsConfig_v1_0_0
 {
     public bool UseProtoCurr { get; set; }
-    public string? BaseProto { get; set; }
+    public string? BasedProto { get; set; }
 }
 
 public class Config_v1_0_0

@@ -21,7 +21,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
         public override async Task HandleAsync(string argList)
         {
             var conf = Config.Global.CurrRegionCmds;
-            if (conf.BaseProto == null)
+            if (conf.UseProtoCurr && conf.BasedProto == null)
             {
                 _logger.LogErro($"This command cannot be used because 'config.json/CurrRegionCmd/BasedProto' is not configured yet.");
                 return;
@@ -40,8 +40,10 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             {
                 if (conf.UseProtoCurr)
                 {
-                    (IMessage? currres, verificationOK) = CurrExtend.GetCurrFromJson(conf.BaseProto, read.ProcessedString,
+#pragma warning disable CS8604 // Checked: L24 conf.UseProtoCurr && conf.BasedProto == null -> return
+                    (IMessage? currres, verificationOK) = CurrExtend.GetCurrFromJson(conf.BasedProto, read.ProcessedString,
                         Resources.CPri[key_id], Resources.OfficialSPub[key_id]);
+#pragma warning restore CS8604
                     res = JsonFormatter.Default.Format(currres);
                 }
                 else
@@ -97,7 +99,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
         public override async Task HandleAsync(string argList)
         {
             var conf = Config.Global.CurrRegionCmds;
-            if (conf.BaseProto == null)
+            if (conf.UseProtoCurr && conf.BasedProto == null)
             {
                 _logger.LogErro($"This command cannot be used because 'config.json/CurrRegionCmd/BasedProto' is not configured yet.");
                 return;
@@ -115,8 +117,10 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             {
                 if (conf.UseProtoCurr)
                 {
-                    res = ProtoSerialize.Serialize(conf.BaseProto, read.ProcessedString ?? string.Empty)
+#pragma warning disable CS8604 // Checked: L102 conf.UseProtoCurr && conf.BasedProto == null -> return
+                    res = ProtoSerialize.Serialize(conf.BasedProto, read.ProcessedString ?? string.Empty)
                         ?.GetCurrJson(Resources.CPri[key_id], Resources.LocalSPri[key_id]);
+#pragma warning restore CS8604
                 }
                 else
                 {

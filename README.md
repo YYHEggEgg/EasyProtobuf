@@ -17,7 +17,7 @@ A easy tool for protobuf related operations.
 
 1. Give your protos a name as the `protobuf_version`, e.g. `hk4e_3.6_live`.
 2. Create a directory here with name of `Protobuf-$(protobuf_version)`, e.g. `Protobuf-hk4e_3.6_live`.
-3. Create a sub directory named `Protos` and put `*.proto` files inside. e.g. `Protobuf-hk4e_3.6_live/Protos/...`.
+3. Put `*.proto` files inside. e.g. `Protobuf-hk4e_3.6_live/...`. Files under `Protos` sub-directory is also accepted.
 4. Start `./publish` with `protobuf_version`, e.g:
 
    ```sh
@@ -48,6 +48,7 @@ A easy tool for protobuf related operations.
 
   ```json
   {
+    // ...
     "EasyProtobufProgram": {
       "ProtoRootNamespace": "MiHomo.Protos"
     }

@@ -52,55 +52,6 @@ internal static class Tools
 #pragma warning restore CS8603 // 可能返回 null 引用。
     }
 
-    /// <summary>
-    /// Load the rsa key as <see cref="RSAUtilBase"/>.
-    /// </summary>
-    /// <param name="rsaKey">The string rsa key, support public/private, PKCS1/PKCS8/Xml all.</param>
-    /// <param name="keySize">The bits key size, e.g. 2048-bit</param>
-    /// <returns></returns>
-    public static RSAUtilBase LoadRSAKey(string rsaKey, int keySize = 2048)
-    {
-        var keyType = TreatRSAKeyType(rsaKey);
-        // PKCS8 Padding
-        if (keyType == (RsaKeyType.Pkcs8 | RsaKeyType.Public))
-            return new RsaPkcs8Util(publicKey: rsaKey, keySize: keySize);
-        else if (keyType == (RsaKeyType.Pkcs8 | RsaKeyType.Private))
-            return new RsaPkcs8Util(privateKey: rsaKey, keySize: keySize);
-        // PKCS1 Padding
-        else if (keyType == (RsaKeyType.Pkcs1 | RsaKeyType.Public))
-            return new RsaPkcs1Util(publicKey: rsaKey, keySize: keySize);
-        else if (keyType == (RsaKeyType.Pkcs1 | RsaKeyType.Private))
-            return new RsaPkcs1Util(privateKey: rsaKey, keySize: keySize);
-        // .NET XML Format
-        else if (keyType == (RsaKeyType.Xml | RsaKeyType.Public))
-            return new RsaXmlUtil(publicKey: rsaKey, keySize: keySize);
-        else if (keyType == (RsaKeyType.Xml | RsaKeyType.Private))
-            return new RsaXmlUtil(privateKey: rsaKey, keySize: keySize);
-        else throw new ArgumentException("Invalid RSA Key!", nameof(rsaKey));
-    }
-
-    public static RsaKeyType TreatRSAKeyType(string rsaKey)
-    {
-        // PKCS8 Padding
-        if (rsaKey.StartsWith("-----BEGIN PUBLIC KEY-----"))
-            return RsaKeyType.Pkcs8 | RsaKeyType.Public;
-        else if (rsaKey.StartsWith("-----BEGIN PRIVATE KEY-----"))
-            return RsaKeyType.Pkcs8 | RsaKeyType.Private;
-        // PKCS1 Padding
-        else if (rsaKey.StartsWith("-----BEGIN RSA PUBLIC KEY-----"))
-            return RsaKeyType.Pkcs1 | RsaKeyType.Public;
-        else if (rsaKey.StartsWith("-----BEGIN RSA PRIVATE KEY-----"))
-            return RsaKeyType.Pkcs1 | RsaKeyType.Private;
-        // .NET XML Format
-        else if (rsaKey.StartsWith("<RSAKeyValue>"))
-        {
-            if (rsaKey.Contains("<InverseQ>"))
-                return RsaKeyType.Xml | RsaKeyType.Private;
-            else return RsaKeyType.Xml | RsaKeyType.Public;
-        }
-        else throw new ArgumentException("Invalid RSA Key!", nameof(rsaKey));
-    }
-
     #region GetFullFilePath
     public static bool TryGetFullFilePath(string? filePath, string? basePath,
         string allowed_extension, [NotNullWhen(true)] out string? result)

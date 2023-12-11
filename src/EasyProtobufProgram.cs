@@ -20,7 +20,7 @@ class ProtobufOption
 
 internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
 {
-    public override string CommandName => $"{nameof(EasyProtobufProgram)} (built-in)";
+    public override string CommandName => nameof(EasyProtobufProgram);
     public override string Usage => throw new NotImplementedException();
     public override string Description => $"(Default) Type proto name and do operations.";
     public readonly static string? protobuf_version = Environment.GetEnvironmentVariable("EASYPROTOBUF_PROTOCOL_VERSION");
@@ -33,11 +33,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             use_Working_Directory: true,
             debug_LogWriter_AutoFlush: true
         ));
-        ConsoleWrapper.ShutDownRequest += (_, _) =>
-        {
-            Log.Info($"Thanks for using EasyProtobuf! Exiting...");
-            Environment.Exit(1);
-        };
+        ConsoleWrapper.ShutDownRequest += Tools.ExitOnLaunching;
         string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3);
         Log.Info($"Welcome to EasyProtobuf v{version ?? "<unknown>"}! Protobuf version: {protobuf_version}.");
 
@@ -170,6 +166,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             new GenerateCurrRegionCmd(),
             new Ec2bCmd(),
             new MT19937Cmd(),
+            new RsaKeyConvertCmd(),
         };
         return handlers;
     }
