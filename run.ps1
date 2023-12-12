@@ -6,9 +6,9 @@ if ($args.Count -eq 0) {
   $protocol_ver = $args[0]
 }
 
-# 2. 检查目录 Protobuf-$protocol_ver/Protos 是否存在，不存在则提示用户并退出
-if (!(Test-Path "Protobuf-$protocol_ver/Protos")) {
-  Write-Host "Protobuf-$protocol_ver/Protos doesn't exist!"
+# 2. 检查目录 Protobuf-$protocol_ver 是否存在，不存在则提示用户并退出
+if (!(Test-Path "Protobuf-$protocol_ver")) {
+  Write-Host "Protobuf-$protocol_ver doesn't exist!"
   exit 1
 }
 
@@ -21,7 +21,7 @@ New-Item -ItemType Directory -Force -Path "Protobuf-$protocol_ver/Compiled"
 
 # 5. Call dotnet build and pass the version attribute
 Write-Host "Start building program..."
-dotnet publish EasyProtobuf.csproj -c Release -p:protobuf_version=$protocol_ver -o "EasyProtobuf Build/$protocol_ver/bin"
+dotnet build EasyProtobuf.csproj -c Debug -p:protobuf_version="$protocol_ver"
 
 # 6. Check if the build was successful or not
 if ($LASTEXITCODE -eq 0) {
@@ -32,7 +32,7 @@ if ($LASTEXITCODE -eq 0) {
 }
 
 # 7. Use the default config
-if (!Test-Path -Path "config-$protocol_ver.json" -PathType Leaf) {
+if (!(Test-Path -Path "config-$protocol_ver.json" -PathType Leaf)) {
   Copy-Item "config_example.json" "config-$protocol_ver.json"
 }
 

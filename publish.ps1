@@ -8,9 +8,9 @@ if ($args.Count -eq 0) {
   $protocol_ver = $args[0]
 }
 
-# 2. 检查目录 Protobuf-$protocol_ver/Protos 是否存在，不存在则提示用户并退出
-if (!(Test-Path "Protobuf-$protocol_ver/Protos")) {
-  Write-Host "Protobuf-$protocol_ver/Protos doesn't exist!"
+# 2. 检查目录 Protobuf-$protocol_ver 是否存在，不存在则提示用户并退出
+if (!(Test-Path "Protobuf-$protocol_ver")) {
+  Write-Host "Protobuf-$protocol_ver doesn't exist!"
   exit 1
 }
 
@@ -37,7 +37,7 @@ if ($LASTEXITCODE -eq 0) {
 }
 
 # 8. Copy the config and resources
-if (!Test-Path -Path "config-$protocol_ver.json" -PathType Leaf) {
+if (!(Test-Path -Path "config-$protocol_ver.json" -PathType Leaf)) {
   Copy-Item "config_example.json" "config-$protocol_ver.json"
 }
 Copy-Item "config-$protocol_ver.json" "EasyProtobuf Build/$protocol_ver/config-$protocol_ver.json" -force
