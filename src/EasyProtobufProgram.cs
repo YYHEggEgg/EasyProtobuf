@@ -167,6 +167,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             new Ec2bCmd(),
             new MT19937Cmd(),
             new RsaKeyConvertCmd(),
+            new XorCmd(),
         };
         return handlers;
     }
@@ -222,7 +223,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             int sepindex = cmd.IndexOf(' ');
             if (sepindex == -1) sepindex = cmd.Length;
             string commandName = cmd.Substring(0, sepindex);
-            if (helpstrings.Contains(commandName))
+            if (helpstrings.Contains(commandName.ToLower()))
             {
                 ShowHelps();
                 continue;

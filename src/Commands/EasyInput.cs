@@ -71,36 +71,9 @@ namespace YYHEggEgg.EasyProtobuf
             #endregion
         }
 
-        /// <summary>
-        /// Process a string and return the judge result.
-        /// </summary>
-        /// <param name="args">The command line args, which will be <see cref="string.Concat(IEnumerable{string?})"/>ed together before processing.</param>
-        /// <param name="offset">The array offset.</param>
-        public static EasyInputResult TryPreProcess(string?[] args, int offset = 0)
+        public static EasyInputResult TryPreProcess(IEnumerable<string> args, int offset = 0)
         {
-            string[] innerargs = new string[args.Length - offset];
-            if (args.Length > offset)
-            {
-                Array.Copy(args, offset, innerargs, 0, args.Length - offset);
-            }
-            return TryPreProcess(string.Concat(innerargs));
-        }
-
-        /// <summary>
-        /// Process a string and return the judge result.
-        /// </summary>
-        /// <param name="args">The command line args, which will be <see cref="string.Concat(IEnumerable{string?})"/>ed together before processing.</param>
-        /// <param name="offset">The array offset.</param>
-        public static EasyInputResult TryPreProcess(List<string> args, int offset = 0)
-        {
-            string[] innerargs = new string[args.Count - offset];
-            if (args.Count > offset)
-            {
-                for (int i = 0; i < args.Count - offset; i++)
-                {
-                    innerargs[i] = args[offset + i];
-                }
-            }
+            IEnumerable<string> innerargs = args.Skip(offset);
             return TryPreProcess(string.Concat(innerargs));
         }
 
