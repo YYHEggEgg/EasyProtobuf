@@ -33,14 +33,14 @@ internal class XorCmd : CommandHandlerBase
 
     public override string Usage => $"xor [command] <args> {Environment.NewLine}" +
         $"  command 'operate' (default): Do a XOR operation. {Environment.NewLine}" +
-        $"    xor <value>                The HEX / Base64 Content that should be decrypted. {Environment.NewLine}" +
-        $"        -k, --xorkey           Set the default key for XOR command. {Environment.NewLine}" +
-        $"        --validate-startswith  Validate the result starts with a certain pattern. {Environment.NewLine}" +
-        $"        --validate-endswith    Validate the result ends with a certain pattern. {Environment.NewLine}" +
+        $"    xor <value>                      The HEX / Base64 Content that should be decrypted. {Environment.NewLine}" +
+        $"        -k, --xorkey                 Set the default key for XOR command. {Environment.NewLine}" +
+        $"        --validate-startswith <bin>  Validate the result starts with a certain pattern. {Environment.NewLine}" +
+        $"        --validate-endswith <bin>    Validate the result ends with a certain pattern. {Environment.NewLine}" +
         $" {Environment.NewLine}" +
         $"  command 'set-key': Set the default key for XOR operations. {Environment.NewLine}" +
         $"    xor set-key {Environment.NewLine}" +
-        $"        <xorkey>               The demanded default key for XOR command. {Environment.NewLine}" +
+        $"        <xorkey>                     The demanded default key for XOR command. {Environment.NewLine}" +
         $" {Environment.NewLine}" +
         EasyInput.MultipleInputNotice +
         $" {Environment.NewLine}" +
@@ -87,7 +87,7 @@ internal class XorCmd : CommandHandlerBase
         await Tools.SetClipBoardAsync(Convert.ToHexString(value));
         _logger.LogInfo($"Successfully decrypted data, input: {value.Length} bytes, key: {key.Length} bytes.");
         
-        if (opt.ValidateStartsWith != null)
+        if (opt.ValidateStartsWith != null && opt.ValidateStartsWith.Any())
         {
             var assert = EasyInput.TryPreProcess(opt.ValidateStartsWith).ToByteArray();
             if (assert.Length > value.Length)
@@ -116,7 +116,7 @@ internal class XorCmd : CommandHandlerBase
                 }
             }
         }
-        if (opt.ValidateEndsWith != null)
+        if (opt.ValidateEndsWith != null && opt.ValidateEndsWith.Any())
         {
             var assert = EasyInput.TryPreProcess(opt.ValidateEndsWith).ToByteArray();
             if (assert.Length > value.Length)
