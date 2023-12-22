@@ -186,6 +186,7 @@ internal static class Tools
         try
         {
             ClipboardService.SetText(text);
+            Log.Verb(text, nameof(SetClipBoard));
             Log.Info("Result copied to clipboard.", nameof(SetClipBoard));
         }
         catch (Exception ex)
@@ -200,6 +201,7 @@ internal static class Tools
         try
         {
             await ClipboardService.SetTextAsync(text);
+            Log.Verb(text, nameof(SetClipBoard));
             Log.Info("Result copied to clipboard.", nameof(SetClipBoard));
         }
         catch (Exception ex)

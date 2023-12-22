@@ -32,6 +32,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             max_Output_Char_Count: -1,
             use_Console_Wrapper: true,
             use_Working_Directory: true,
+            global_Minimum_LogLevel: LogLevel.Verbose,
             debug_LogWriter_AutoFlush: true
         ));
         ConsoleWrapper.ShutDownRequest += Tools.ExitOnLaunching;
