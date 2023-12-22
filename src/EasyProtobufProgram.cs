@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Google.Protobuf;
+using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using YYHEggEgg.EasyProtobuf.Commands;
@@ -85,13 +86,11 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
         Type? prototype = null;
         try
         {
-            var protoNamespace = conf?.ProtoRootNamespace;
-            if (protoNamespace == null) prototype = Type.GetType(protoname);
-            else prototype = Type.GetType($"{protoNamespace}.{protoname}");
+            prototype = FindProtoMessageType(protoname);
         }
         catch (Exception ex)
         {
-            _logger.LogErroTrace(ex, $"Find Proto (by name) failed. ");
+            _logger.LogErroTrace(ex, $"Find Proto (by name) failed.");
         }
         if (prototype == null)
         {
@@ -156,6 +155,30 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             }
         }
     }
+
+
+    #region Protobuf Operations
+    public static Type FindProtoMessageType(string protoname)
+    {
+        var conf = Config.Global.EasyProtobufProgram;
+        Type? prototype = null;
+        var protoNamespace = conf?.ProtoRootNamespace;
+        if (protoNamespace == null) prototype = Type.GetType(protoname);
+        else prototype = Type.GetType($"{protoNamespace}.{protoname}");
+        if (prototype == null) throw new ArgumentException("Find Proto (by name) failed.", nameof(protoname));
+        return prototype;
+    }
+
+    public static IMessage? Serialize(string protoname, string json)
+    {
+        return ProtoSerialize.Serialize(FindProtoMessageType(protoname), json);
+    }
+
+    public static IMessage? Deserialize(string protoname, byte[] contentbin)
+    {
+        return ProtoSerialize.Deserialize(FindProtoMessageType(protoname), contentbin);
+    }
+    #endregion
 
     private static List<CommandHandlerBase> ConfigureCommands()
     {
@@ -250,7 +273,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             catch (Exception ex)
             {
                 LogTrace.ErroTrace(ex,
-                    prompt: $"Encountered error when handling command '{commandName}'. Please check your input. ");
+                    prompt: $"Encountered error when handling command '{commandName}'. Please check your input.");
             }
 
         }

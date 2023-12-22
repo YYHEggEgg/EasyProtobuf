@@ -191,7 +191,7 @@ internal static class Tools
         catch (Exception ex)
         {
             Log.Info(text, nameof(SetClipBoard));
-            LogTrace.WarnTrace(ex, nameof(SetClipBoard), $"Copy to clipboard failed. ");
+            LogTrace.WarnTrace(ex, nameof(SetClipBoard), $"Copy to clipboard failed.");
         }
     }
 
@@ -205,7 +205,7 @@ internal static class Tools
         catch (Exception ex)
         {
             Log.Info(text, nameof(SetClipBoard));
-            LogTrace.WarnTrace(ex, nameof(SetClipBoard), $"Copy to clipboard failed. ");
+            LogTrace.WarnTrace(ex, nameof(SetClipBoard), $"Copy to clipboard failed.");
         }
     }
     #endregion

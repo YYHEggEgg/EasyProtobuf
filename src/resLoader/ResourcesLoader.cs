@@ -115,7 +115,7 @@ public static class ResourcesLoader
                 }
                 catch (Exception ex)
                 {
-                    LogTrace.WarnTrace(ex, nameof(ResourcesLoader), $"Load ClientPri key id: {id} failed, skipped file: {file}. ");
+                    LogTrace.WarnTrace(ex, nameof(ResourcesLoader), $"Load ClientPri key id: {id} failed, skipped file: {file}.");
                 }
             }
         }
@@ -135,7 +135,7 @@ public static class ResourcesLoader
                 catch (Exception ex)
                 {
                     LogTrace.WarnTrace(ex, nameof(ResourcesLoader),
-                        $"Load ServerPub-Official key id: {id} failed, skipped file: {file}. ");
+                        $"Load ServerPub-Official key id: {id} failed, skipped file: {file}.");
                 }
             }
         }
@@ -155,7 +155,7 @@ public static class ResourcesLoader
                 catch (Exception ex)
                 {
                     LogTrace.WarnTrace(ex, nameof(ResourcesLoader),
-                        $"Load ServerPri-Hosting key id: {id} failed, skipped file: {file}. ");
+                        $"Load ServerPri-Hosting key id: {id} failed, skipped file: {file}.");
                 }
             }
         }

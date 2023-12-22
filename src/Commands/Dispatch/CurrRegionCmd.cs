@@ -4,6 +4,7 @@ using Google.Protobuf;
 using Newtonsoft.Json;
 using YYHEggEgg.EasyProtobuf.Util;
 using YYHEggEgg.EasyProtobuf.Configuration;
+using YYHEggEgg.Logger;
 
 namespace YYHEggEgg.EasyProtobuf.Commands
 {
@@ -66,7 +67,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             }
             catch (Exception ex)
             {
-                _logger.LogErroTrace(ex, $"Decryption failed. ");
+                _logger.LogErroTrace(ex, $"Decryption failed.");
                 _logger.LogWarn($"It may because the RSA key doesn't match " +
                     $"or you provided false query_cur_region json.");
                 return;
@@ -118,7 +119,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                 if (conf.UseProtoCurr)
                 {
 #pragma warning disable CS8604 // Checked: L102 conf.UseProtoCurr && conf.BasedProto == null -> return
-                    res = ProtoSerialize.Serialize(conf.BasedProto, read.ProcessedString ?? string.Empty)
+                    res = EasyProtobufProgram.Serialize(conf.BasedProto, read.ProcessedString ?? string.Empty)
                         ?.GetCurrJson(Resources.CPri[key_id], Resources.LocalSPri[key_id]);
 #pragma warning restore CS8604
                 }
@@ -130,7 +131,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             catch (Exception ex)
             {
                 _logger.LogErroTrace(ex, 
-                    $"Protobuf serialization / JSON read failed. ");
+                    $"Protobuf serialization / JSON read failed.");
                 _logger.LogWarn($"It may because the json isn't valid." +
                     $"It's recommended to modify based on the result" +
                     $"from json protobuf from 'util dcurr' command.");
@@ -149,7 +150,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             }
             catch (Exception ex)
             {
-                _logger.LogErroTrace(ex, $"RSA encryption failed. ");
+                _logger.LogErroTrace(ex, $"RSA encryption failed.");
                 _logger.LogWarn($"It may because you don't provide match key" +
                     $"in resources/ClientPri and resources/ServerPri.");
                 return;

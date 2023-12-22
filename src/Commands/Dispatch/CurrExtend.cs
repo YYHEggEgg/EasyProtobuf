@@ -26,7 +26,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands.Dispatch
                 return (null, null);
             byte[] data = Convert.FromBase64String(content);
             byte[] res = CPri.RsaDecrypt(data, RSAEncryptionPadding.Pkcs1);
-            return (ProtoSerialize.Deserialize(protoname, res),
+            return (EasyProtobufProgram.Deserialize(protoname, res),
                     SPub.VerifyData(res, Convert.FromBase64String(sign),
                         HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1));
         }
