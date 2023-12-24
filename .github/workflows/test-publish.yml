@@ -2,7 +2,7 @@ name: EasyProtobuf Publish Test
 
 on:
   push:
-    branches: [ "main", "actions-test" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -39,7 +39,7 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: EasyProtobuf Build - hk4e_${{ matrix.protobuf-branch }} (Ubuntu)
+        name: EasyProtobuf Build - hk4e_${{ matrix.protobuf-branch }} (Windows)
         path: EasyProtobuf Build
 
   publish-ubuntu:
