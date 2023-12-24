@@ -33,7 +33,7 @@ git clone --branch hk4e_3.4_gio-cmdid https://github.com/YYHEggEgg/mihomo-protos
 
 ## Protobuf 操作
 
-开启程序后，您将会遇到以下提示：
+开启程序后，您将会看到以下提示：
 
 ```log
 12:09:09 <Info> Welcome to EasyProtobuf v1.0.0! Protobuf version: hk4e_3.4_gio-cmdid.
@@ -91,7 +91,7 @@ dcurr 4 {"content":"KsDGYWDKC+fFQBIOPIKtKbXcN8eHT/wJ6zVEB+sgqoZzuoiN9ZqKJkzXRKDF
 
 `dcurr` 命令将会反序列化内容为符合 `QueryCurrRegionHttpRsp` 的 JSON，并使用本地的 RSA 公钥（ServerPub-Official）验证签名。因此，如果您遇到提示签名验证失败，则您本地的 RSA 公钥与生成 `query_cur_region` 内容的服务器使用的私钥并不匹配。
 
-如果被加密的 Protobuf 消息不叫做 `QueryCurrRegionHttpRsp`，您可以更改 `#/CurrRegionCmds/BasedProto` 来进行适配。如果被加密的内容为纯文本，您可以更改 `#/CurrRegionCmds/UseProtoCurr` 为 `false` 来输入/输出文本而不需 Proto.
+如果被加密的 Protobuf 消息不叫做 `QueryCurrRegionHttpRsp`，您可以在配置文件中更改 `#/CurrRegionCmds/BasedProto` 来进行适配。如果被加密的内容为纯文本，您可以更改 `#/CurrRegionCmds/UseProtoCurr` 为 `false` 来输入/输出文本而不需 Proto.
 
 ## `gencur` 命令
 
@@ -109,7 +109,7 @@ gencur <key_id> <protobuf_content>
 gencur 4 { "retcode": 1, "msg": "Not Found version config" }
 ```
 
-将产生以下输出：
+将产生与以下相似的输出：
 
 ```log
 20:59:50 <Info:EasyInput> Detected Json input!
@@ -126,7 +126,7 @@ gencur 4 { "retcode": 1, "msg": "Not Found version config" }
 
 有关粘贴内容至控制台的注意事项，请参阅 [`dcurr` 命令](#dcurr-命令)。
 
-如果被加密的 Protobuf 消息不叫做 `QueryCurrRegionHttpRsp`，您可以更改 `#/CurrRegionCmds/BasedProto` 来进行适配。如果需要加密的内容为纯文本，您可以更改 `#/CurrRegionCmds/UseProtoCurr` 为 `false` 来输入/输出文本而不需 Proto.
+如果被加密的 Protobuf 消息不叫做 `QueryCurrRegionHttpRsp`，您可以在配置文件中更改 `#/CurrRegionCmds/BasedProto` 来进行适配。如果被加密的内容为纯文本，您可以更改 `#/CurrRegionCmds/UseProtoCurr` 为 `false` 来输入/输出文本而不需 Proto.
 
 ## `convert` 命令
 
@@ -238,7 +238,7 @@ mt19937 from-seed <--anime|--sleep>
 
 #### 示例
 
-以下命令以 `6167` 与元梦之星算法生成其对应的异或密钥。
+以下命令以 `6167` 为种子，使用元梦之星算法生成其对应的异或密钥。
 
 ```sh
 mt19937 from-seed --anime 6167
@@ -375,7 +375,7 @@ rsakeyconv
 
 ### 示例
 
-以下命令将 resources 中的密钥转换为适于 Patch 的 XML 公钥形式：
+以下命令将 `resources` 中的密钥转换为适于 Patch 的 XML 公钥形式：
 
 ```sh
 rsakeyconv "resources/rsakeys/ServerPri-Hosting/5-pri.pem" -o Public Xml
