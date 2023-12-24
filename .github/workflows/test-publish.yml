@@ -13,8 +13,8 @@ jobs:
     strategy:
       matrix:
         protobuf-branch: [
-          "hk4e_3.4_gio-cmdid",
-          "hk4e_3.4_live",
+          "3.4_gio-cmdid",
+          "3.4_live",
         ]
 
     runs-on: windows-latest
@@ -33,13 +33,13 @@ jobs:
 
     - name: Fetch Protobuf and Publish EasyProtobuf
       run: |
-        git clone --branch ${{ matrix.protobuf-branch }} https://github.com/YYHEggEgg/mihomo-protos Protobuf-${{ matrix.protobuf-branch }}
-        ./publish ${{ matrix.protobuf-branch }}
+        git clone --branch ${{ matrix.protobuf-branch }} https://github.com/YYHEggEgg/mihomo-protos Protobuf-hk4e_${{ matrix.protobuf-branch }}
+        ./publish hk4e_${{ matrix.protobuf-branch }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: EasyProtobuf Build - ${{ matrix.protobuf-branch }} (Ubuntu)
+        name: EasyProtobuf Build - hk4e_${{ matrix.protobuf-branch }} (Ubuntu)
         path: EasyProtobuf Build
 
   publish-ubuntu:
@@ -47,8 +47,8 @@ jobs:
     strategy:
       matrix:
         protobuf-branch: [
-          "hk4e_3.4_gio-cmdid",
-          "hk4e_3.4_live",
+          "3.4_gio-cmdid",
+          "3.4_live",
         ]
 
     runs-on: ubuntu-latest
@@ -67,11 +67,11 @@ jobs:
 
     - name: Fetch Protobuf and Publish EasyProtobuf
       run: |
-        git clone --branch ${{ matrix.protobuf-branch }} https://github.com/YYHEggEgg/mihomo-protos Protobuf-${{ matrix.protobuf-branch }}
-        ./publish ${{ matrix.protobuf-branch }}
+        git clone --branch ${{ matrix.protobuf-branch }} https://github.com/YYHEggEgg/mihomo-protos Protobuf-hk4e_${{ matrix.protobuf-branch }}
+        ./publish hk4e_${{ matrix.protobuf-branch }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: EasyProtobuf Build - ${{ matrix.protobuf-branch }} (Ubuntu)
+        name: EasyProtobuf Build - hk4e_${{ matrix.protobuf-branch }} (Ubuntu)
         path: EasyProtobuf Build
