@@ -47,6 +47,9 @@ then
 fi
 cp -f "config-$protocol_ver.json" "EasyProtobuf Build/$protocol_ver/config-$protocol_ver.json"
 cp -r -f resources "EasyProtobuf Build/$protocol_ver/resources"
+cp -f "Handbook.md" "EasyProtobuf Build/$protocol_ver/Handbook.md"
+cp -f "Handbook_CN.md" "EasyProtobuf Build/$protocol_ver/Handbook_CN.md"
+cp -f "LICENSE" "EasyProtobuf Build/$protocol_ver/LICENSE"
 
 # 9. Write run.sh and run-win.bat
 cat > "EasyProtobuf Build/$protocol_ver/run" <<EOF

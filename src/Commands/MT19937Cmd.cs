@@ -117,7 +117,9 @@ internal class MT19937Cmd : CommandHandlerBase
     {
         if (!ulong.TryParse(o.InputSeed, out ulong seed))
         {
-            seed = Convert.FromHexString(o.InputSeed).GetUInt64(0);
+            if (o.InputSeed.StartsWith("0x") || o.InputSeed.StartsWith("0X"))
+                o.InputSeed = o.InputSeed[2..];
+            seed = Convert.FromHexString(o.InputSeed).Fill0(8).GetUInt64(0);
         }
 
         LogKeyFromSeed(o, seed);

@@ -190,7 +190,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             new GenerateCurrRegionCmd(),
             new Ec2bCmd(),
             new MT19937Cmd(),
-            new RsaKeyConvertCmd(),
+            new RsaCmd(),
             new XorCmd(),
         };
         return handlers;
