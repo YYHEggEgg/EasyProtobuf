@@ -33,18 +33,14 @@ jobs:
 
     - name: Fetch Protobuf and Publish EasyProtobuf
       run: |
-        git clone --branch $env:ProtobufBranch https://github.com/YYHEggEgg/mihomo-protos Protobuf-$env:ProtobufBranch
-        ./publish $env:ProtobufBranch
-      env:
-        ProtobufBranch: ${{ matrix.protobuf-branch }}
+        git clone --branch ${{ matrix.protobuf-branch }} https://github.com/YYHEggEgg/mihomo-protos Protobuf-${{ matrix.protobuf-branch }}
+        ./publish ${{ matrix.protobuf-branch }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: EasyProtobuf Build - $env:ProtobufBranch (Windows)
+        name: EasyProtobuf Build - ${{ matrix.protobuf-branch }} (Ubuntu)
         path: EasyProtobuf Build
-      env:
-        ProtobufBranch: ${{ matrix.protobuf-branch }}
 
   publish-ubuntu:
 
@@ -71,15 +67,11 @@ jobs:
 
     - name: Fetch Protobuf and Publish EasyProtobuf
       run: |
-        git clone --branch $env:ProtobufBranch https://github.com/YYHEggEgg/mihomo-protos Protobuf-$env:ProtobufBranch
-        ./publish $env:ProtobufBranch
-      env:
-        ProtobufBranch: ${{ matrix.protobuf-branch }}
+        git clone --branch ${{ matrix.protobuf-branch }} https://github.com/YYHEggEgg/mihomo-protos Protobuf-${{ matrix.protobuf-branch }}
+        ./publish ${{ matrix.protobuf-branch }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: EasyProtobuf Build - $env:ProtobufBranch (Ubuntu)
+        name: EasyProtobuf Build - ${{ matrix.protobuf-branch }} (Ubuntu)
         path: EasyProtobuf Build
-      env:
-        ProtobufBranch: ${{ matrix.protobuf-branch }}
