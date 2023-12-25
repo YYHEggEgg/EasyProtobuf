@@ -2,6 +2,14 @@
 
 A easy tool for protobuf related operations.
 
+_Made by miHomo Software_
+
+<div>
+  <a href="https://discord.gg/NcAjuCSFvZ">
+    <img alt="Discord - miHomo Software" src="https://img.shields.io/discord/1144970607616860171?label=Discord&logo=discord&style=for-the-badge">
+  </a>
+</div>
+
 ## What can it do?
 
 - Protobuf

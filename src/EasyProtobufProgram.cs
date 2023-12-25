@@ -40,6 +40,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
         ConsoleWrapper.ShutDownRequest += Tools.ExitOnLaunching;
         string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3);
         Log.Info($"Welcome to EasyProtobuf v{version ?? "<unknown>"}! Protobuf version: {protobuf_version}.");
+        Log.Info($"<3 from miHomo Software & YYHEggEgg");
 
         Tools.RunBackgroundUpdateCheck();
 
