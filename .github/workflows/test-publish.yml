@@ -1,0 +1,77 @@
+name: EasyProtobuf Publish Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  publish-windows:
+
+    strategy:
+      matrix:
+        protobuf-branch: [
+          "3.4_gio-cmdid",
+          "3.4_live",
+        ]
+
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Fetch Protobuf and Publish EasyProtobuf
+      run: |
+        git clone --branch ${{ matrix.protobuf-branch }} https://github.com/YYHEggEgg/mihomo-protos Protobuf-hk4e_${{ matrix.protobuf-branch }}
+        ./publish hk4e_${{ matrix.protobuf-branch }}
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: EasyProtobuf Build - hk4e_${{ matrix.protobuf-branch }} (Windows)
+        path: EasyProtobuf Build
+
+  publish-ubuntu:
+
+    strategy:
+      matrix:
+        protobuf-branch: [
+          "3.4_gio-cmdid",
+          "3.4_live",
+        ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Fetch Protobuf and Publish EasyProtobuf
+      run: |
+        git clone --branch ${{ matrix.protobuf-branch }} https://github.com/YYHEggEgg/mihomo-protos Protobuf-hk4e_${{ matrix.protobuf-branch }}
+        ./publish hk4e_${{ matrix.protobuf-branch }}
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: EasyProtobuf Build - hk4e_${{ matrix.protobuf-branch }} (Ubuntu)
+        path: EasyProtobuf Build

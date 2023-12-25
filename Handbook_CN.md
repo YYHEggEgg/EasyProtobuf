@@ -7,7 +7,7 @@
 下文将会以 Protobuf 版本 `hk4e_3.4_gio-cmdid` 举例。如果您想获得与演示例相同的 Protobuf 版本，可以输入以下命令：
 
 ```shell
-git clone --branch hk4e_3.4_gio-cmdid https://github.com/YYHEggEgg/mihomo-protos Protobuf-hk4e_3.4_gio-cmdid
+git clone --branch 3.4_gio-cmdid https://github.com/YYHEggEgg/mihomo-protos Protobuf-hk4e_3.4_gio-cmdid
 ```
 
 然后复制 `config_example.json` 到 `config-hk4e_3.4_gio-cmdid.json`，并取消第 6 行 `ProtoRootNamespace` 的注释，就可以启动：
