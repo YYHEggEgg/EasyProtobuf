@@ -20,6 +20,7 @@ public class Config_v1_0_0
     public const string CORRESPONDING_VERSION = "1.0.0";
 
     public string ConfigVersion { get; set; }
+    public bool EnableRecordCommandHistory { get; set; }
     public string RSAKeysDirectoryName { get; set; }
     public ProtobufCmdConfig_v1_0_0? EasyProtobufProgram { get; set; }
     public CurrRegionCmdsConfig_v1_0_0 CurrRegionCmds { get; set; }

@@ -26,6 +26,8 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
     public override string Description => $"(Default) Type proto name and do operations.";
     public readonly static string? protobuf_version = Environment.GetEnvironmentVariable("EASYPROTOBUF_PROTOCOL_VERSION");
 
+    private static BaseLogger? CommandHistoryLogger;
+
     static async Task Main(string[] args)
     {
         Log.Initialize(new LoggerConfig(
@@ -76,6 +78,23 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
 
         ResourcesLoader.CheckForRequiredResources();
         await ResourcesLoader.Load();
+
+        #region Command History
+        if (Config.Global.EnableRecordCommandHistory)
+        {
+            var conf = Log.GlobalConfig;
+            conf.Console_Minimum_LogLevel = LogLevel.None;
+            CommandHistoryLogger = new(conf, new LogFileConfig
+            {
+                MinimumLogLevel = LogLevel.Information,
+                MaximumLogLevel = LogLevel.Information,
+                AutoFlushWriter = true,
+                FileIdentifier = "command-history",
+                IsPipeSeparatedFile = true,
+                AllowAutoFallback = true,
+            });
+        }
+        #endregion
 
         await Start();
     }
@@ -244,6 +263,8 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             {
                 continue;
             }
+            CommandHistoryLogger?.Info(cmd, "InputCommand");
+
             int sepindex = cmd.IndexOf(' ');
             if (sepindex == -1) sepindex = cmd.Length;
             string commandName = cmd.Substring(0, sepindex);
