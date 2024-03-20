@@ -36,7 +36,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             use_Working_Directory: true,
             global_Minimum_LogLevel: LogLevel.Verbose,
             debug_LogWriter_AutoFlush: true
-        ));
+        ), CommandHistory.ReadSavedHistory());
         ConsoleWrapper.ShutDownRequest += Tools.ExitOnLaunching;
         string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3);
         Log.Info($"Welcome to EasyProtobuf v{version ?? "<unknown>"}! Protobuf version: {protobuf_version}.");
@@ -264,6 +264,7 @@ internal class EasyProtobufProgram : StandardCommandHandler<ProtobufOption>
             {
                 continue;
             }
+            CommandHistory.PushExecuted(cmd);
             CommandHistoryLogger?.Info(cmd, "InputCommand");
 
             int sepindex = cmd.IndexOf(' ');

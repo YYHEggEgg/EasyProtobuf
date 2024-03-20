@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/YYHEggEgg/EasyProtobuf/blob/main/resources/config-schemas/config_schema_v1.1.0.json",
+  "type": "object",
+  "properties": {
+    "ConfigVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "The config version. ",
+      "const": "1.1.0"
+    },
+    "EnableRecordCommandHistory": {
+      "type": "boolean",
+      "description": "Whether to use latest.command-history.log to record the command you used (this don't affect the runtime console)."
+    },
+    "RestoreHistoryOnRestart": {
+      "type": "boolean",
+      "description": "Whether to store command history in '.bash_history.{protobuf_version}' file and restore them on restart."
+    },
+    "RSAKeysDirectoryName": {
+      "type": "string",
+      "description": "The name of the directory in 'resources' where the RSA Keys is stored.",
+      "default": "rsakeys"
+    },
+    "EasyProtobufProgram": {
+      "description": "Configure options for the default protobuf works.",
+      "type": "object",
+      "properties": {
+        "ProtoRootNamespace": {
+          "description": "The base namespace to query the Proto.",
+          "type": "string"
+        }
+      }
+    },
+    "CurrRegionCmds": {
+      "description": "Configure options for 'dcurr' and 'gencur' command.",
+      "type": "object",
+      "properties": {
+        "UseProtoCurr": {
+          "type": "boolean",
+          "description": "Transfer the input curr json to a Protobuf or a JSON."
+        },
+        "BasedProto": {
+          "description": "The Proto that the 'content' in JSON is based on.",
+          "type": "string",
+          "default": "QueryCurrRegionHttpRsp"
+        }
+      },
+      "dependencies": {
+        "UseProtoCurr": {
+          "oneOf": [
+            {
+              "properties": {
+                "UseProtoCurr": {
+                  "const": false
+                }
+              },
+              "required": [
+                "UseProtoCurr"
+              ]
+            },
+            {
+              "properties": {
+                "UseProtoCurr": {
+                  "const": true
+                }
+              },
+              "required": [
+                "UseProtoCurr",
+                "BasedProto"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "UseProtoCurr"
+      ]
+    }
+  },
+  "required": [
+    "ConfigVersion",
+    "EnableRecordCommandHistory",
+    "RSAKeysDirectoryName",
+    "CurrRegionCmds"
+  ]
+}

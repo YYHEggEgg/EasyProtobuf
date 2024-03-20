@@ -10,11 +10,11 @@ namespace YYHEggEgg.EasyProtobuf.Configuration;
 public static class Config
 {
     public static readonly HashSet<string> SupportedVersions = new(new string[]
-        { "1.0.0" });
-    public const string LATEST_CONFIG_VERSION = "1.0.0";
+        { "1.0.0", "1.1.0" });
+    public const string LATEST_CONFIG_VERSION = "1.1.0";
 
-    private static Config_v1_0_0? _globalConfig;
-    public static Config_v1_0_0 Global =>
+    private static Config_v1_1_0? _globalConfig;
+    public static Config_v1_1_0 Global =>
         _globalConfig ?? throw new InvalidOperationException("config.json not loaded.");
     private static JObject? _baseConfigJson;
     public static JObject BaseConfigJson =>
@@ -33,11 +33,11 @@ public static class Config
 
         if (configVersion == LATEST_CONFIG_VERSION)
         {
-            _globalConfig = Config_v1_0_0.Deserialize(json, configVersion);
+            _globalConfig = Config_v1_1_0.Deserialize(json, configVersion);
         }
         else
         {
-            _globalConfig = Config_v1_0_0.ParseOldVersion(json, configVersion);
+            _globalConfig = Config_v1_1_0.ParseOldVersion(json, configVersion);
         }
     }
 
