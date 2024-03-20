@@ -34,6 +34,7 @@ Then copy `config_example.json` to `config-hk4e_3.4_gio-cmdid.json`, and uncomme
   - [`decrypt` Subcommand](#decrypt-subcommand)
   - [`sign` Subcommand](#sign-subcommand)
   - [`verify` Subcommand](#verify-subcommand)
+  - [`get-keytype` Subcommand](#get-keytype-subcommand)
   - [`keyconv` Subcommand](#keyconv-subcommand)
 
 ## Protobuf Operations
@@ -565,6 +566,42 @@ RSA Verifing needs a Public Key, while providing either Public Key or Private Ke
 
 `--hash` is `SHA256` in most of the times (the default value is also `SHA256`). The acceptable values are `MD5`, `SHA1`, `SHA256`, `SHA384`, `SHA512`.
 
+### `get-keytype` Subcommand
+
+Get the specified RSA Key's Size, Format, Padding information.
+
+```sh
+rsa get-keytype <input-key-filePath>  The path of input key file.
+                (or --cb-in:           Get input from the clipboard.)
+```
+
+#### Example
+
+The following commands will get a Der key and get its information:
+
+```sh
+rsa keyconv "resources/rsakeys/ServerPub-Official/5-pub.xml" -o Public Der Pkcs1 -s "temp.der"
+rsa get-keytype "temp.der"
+```
+
+The output should be as is below:
+
+```log
+<Info:rsa> The input key is of:
+<Info:rsa> - Size: 2048-bit
+<Info:rsa> - Format: Der
+<Info:rsa> - Padding: Pkcs1
+<Info:rsa> - Private/Public: Public
+```
+
+#### Annotation
+
+For any key, you can try to use this subcommand to obtatin its related information.
+
+If you need to know what kind of key your program requires, you can analyze the existing key file with this command; however, if you are developing a .NET or C# project, I personally recommend considering the use of [EggEgg.XC.RSAUtil](https://nuget.org/packages/EggEgg.XC.RSAUtil) to automatically gain support for all formats and elegantly perform various RSA operations.
+
+[![Latest version](https://img.shields.io/nuget/v/EggEgg.XC.RSAUtil.svg?style=flat-square)](https://www.nuget.org/packages/EggEgg.XC.RSAUtil/)
+
 ### `keyconv` Subcommand
 
 Convert the provided RSA key (PEM or XML format) to any supported format.
@@ -637,7 +674,7 @@ At this time, the output should be exactly the same as before.
 
 #### Annotation
 
-This command supports any combination of `Public`, `Private` and `Pkcs1`, `Pkcs8`, `Xml`, except:
+This command supports any combination of `Public`, `Private` and `Pkcs1`, `Pkcs8`, `Xml`, `Der` (v1.1.0+), except:
 
 - Public key (`Public`) cannot be used to generate private key (`Private`).
 
@@ -648,4 +685,3 @@ About the format of the key, there are the following convenient insights:
 - The one that starts with `-----BEGIN PUBLIC KEY-----`, `-----BEGIN PRIVATE KEY-----` is the `Pkcs8` key;
 - The one that starts with `-----BEGIN RSA PUBLIC KEY-----`, `-----BEGIN RSA PRIVATE KEY-----` is the `Pkcs1` key;
 - The above two are distinguished by `PUBLIC` or `PRIVATE` for public and private keys. For the `Xml` format, those that contain only the `Modulus` and `Exponent` elements are public keys; those that contain many elements and are long are private keys.
-- Keys that cannot be viewed in plain text (such as `.der`) are not supported by this program.

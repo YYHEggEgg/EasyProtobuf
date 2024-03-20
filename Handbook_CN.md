@@ -34,6 +34,7 @@ git clone --branch 3.4_gio-cmdid https://github.com/YYHEggEgg/mihomo-protos Prot
   - [`decrypt` 子命令](#decrypt-子命令)
   - [`sign` 子命令](#sign-子命令)
   - [`verify` 子命令](#verify-子命令)
+  - [`get-keytype` 子命令](#get-keytype-子命令)
   - [`keyconv` 子命令](#keyconv-子命令)
 
 ## Protobuf 操作
@@ -565,6 +566,42 @@ RSA 验签使用公钥，但输入提供公钥/私钥均可。
 
 `--hash` 一般都使用 `SHA256`（默认值也是 `SHA256`）。可选值有 `MD5`、`SHA1`、`SHA256`、`SHA384`、`SHA512`。
 
+### `get-keytype` 子命令
+
+获取提供的 RSA 密钥的位数、格式、Padding 等信息。
+
+```sh
+rsa get-keytype <input-key-filePath>  The path of input key file.
+                (or --cb-in:           Get input from the clipboard.)
+```
+
+#### 示例
+
+以下命令可获取一个 Der 密钥，然后获取它的信息：
+
+```sh
+rsa keyconv "resources/rsakeys/ServerPub-Official/5-pub.xml" -o Public Der Pkcs1 -s "temp.der"
+rsa get-keytype "temp.der"
+```
+
+输出应如下所示：
+
+```log
+<Info:rsa> The input key is of:
+<Info:rsa> - Size: 2048-bit
+<Info:rsa> - Format: Der
+<Info:rsa> - Padding: Pkcs1
+<Info:rsa> - Private/Public: Public
+```
+
+#### 注解
+
+对于任何密钥均可以尝试使用本子命令获取其相关信息。
+
+如果需要获知您的程序需求什么样的密钥，可以将已有的密钥文件以该命令分析；但如果您在开发 .NET 或 C# 项目，我个人建议您考虑使用 [EggEgg.XC.RSAUtil](https://nuget.org/packages/EggEgg.XC.RSAUtil) 自动获得对所有格式的支持，并优雅地完成各类 RSA 操作。
+
+[![Latest version](https://img.shields.io/nuget/v/EggEgg.XC.RSAUtil.svg?style=flat-square)](https://www.nuget.org/packages/EggEgg.XC.RSAUtil/)
+
 ### `keyconv` 子命令
 
 将提供的 RSA 密钥（PEM 或 XML 格式）至任何支持的格式。
@@ -637,7 +674,7 @@ rsa keyconv --cb-in -o Public Xml
 
 #### 注解
 
-本命令支持 `Public`、`Private` 与 `Pkcs1`、`Pkcs8`、`Xml` 中的任意组合，除了：
+本命令支持 `Public`、`Private` 与 `Pkcs1`、`Pkcs8`、`Xml`、`Der` (v1.1.0+) 中的任意组合，除了：
 
 - 公钥（`Public`）不能用于生成私钥（`Private`）。
 
@@ -648,4 +685,3 @@ rsa keyconv --cb-in -o Public Xml
 - 以 `-----BEGIN PUBLIC KEY-----`、`-----BEGIN PRIVATE KEY-----` 开头的为 `Pkcs8` 密钥；
 - 以 `-----BEGIN RSA PUBLIC KEY-----`、`-----BEGIN RSA PRIVATE KEY-----` 开头的为 `Pkcs1` 密钥；
 - 上两种都以 `PUBLIC` 或 `PRIVATE` 区分公钥与私钥。对于 `Xml` 格式，仅包含 `Modulus` 与 `Exponent` 元素的是公钥；包含很多元素且很长的是私钥。
-- 不能以纯文本查看的密钥（例如 `.der`）不受本程序支持。

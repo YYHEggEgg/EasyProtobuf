@@ -1,19 +1,50 @@
-using System.Security.Cryptography;
 using CommandLine;
+using System.Text;
+using System.Security.Cryptography;
+using TextCopy;
 using XC.RSAUtil;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-[Verb("keyconv", false, HelpText = "Convert the provided RSA key (PEM or XML) into any supported format.")]
-internal class RsaKeyConvertOption
+internal class RsaKeyInputOptionBase
 {
     [Value(0, Required = false, HelpText = "The path of input key file.")]
     public string InputKeyFilePath { get; set; }
     [Option("cb-in", Required = false, Default = false, HelpText = "Get input from the clipboard.")]
     public bool ClipboardInput { get; set; }
+
+    public async Task<byte[]> GetKeyBytesAsync()
+    {
+        if (InputKeyFilePath != null) return File.ReadAllBytes(Path.GetFullPath(InputKeyFilePath));
+        else if (ClipboardInput)
+        {
+            var keyBin = Encoding.UTF8.GetBytes(await ClipboardService.GetTextAsync() ?? "");
+            if (keyBin.Length == 0)
+            {
+                throw new InvalidOperationException($"Can't get the key from clipboard!");
+            }
+            return keyBin;
+        }
+        else
+        {
+            throw new InvalidOperationException($"Please specify either the input file path or '--cb-in' option!");
+        }
+    }
+}
+
+[Verb("keyconv", false, HelpText = "Convert the provided RSA key (PEM or XML) into any supported format.")]
+internal class RsaKeyConvertOption : RsaKeyInputOptionBase
+{
     [Option('o', "outkey", Required = true, HelpText = "The output key type you demand.")]
     public IEnumerable<string> OutputKeyType { get; set; }
+    [Option('s', "save", Required = false, Default = null, HelpText = "The path you want to save the output key to.")]
+    public string? SaveTo { get; set; }
+}
+
+[Verb("get-keytype", false, HelpText = "Get the provided RSA key's format information.")]
+internal class RsaGetKeyTypeOption : RsaKeyInputOptionBase
+{
 }
 
 internal class RsaOperationOptionBase
@@ -26,7 +57,7 @@ internal class RsaOperationOptionBase
     public string InputKeyFilePath { get; set; }
     public RSAUtilBase GetRSAWorker()
     {
-        return RSAUtilBase.LoadRSAKey(File.ReadAllText(InputKeyFilePath));
+        return RSAUtilBase.LoadRSAKey(File.ReadAllBytes(InputKeyFilePath));
     }
 }
 
@@ -153,21 +184,26 @@ internal partial class RsaCmd : CommandHandlerBase
     $"                                               (Default: Pkcs1)  {Environment.NewLine}" +
     $"                                               (Avaliable: Pkcs1/Pss) {Environment.NewLine}" +
     $" {Environment.NewLine}" +
+    $"  command get-keytype: Get the provided RSA key's format information. {Environment.NewLine}" +
+    $"    rsa get-keytype <input-key-filePath>  The path of input key file. {Environment.NewLine}" +
+    $"                    (or --cb-in:          Get input from the clipboard.) {Environment.NewLine}" +
+    $" {Environment.NewLine}" +
     $"  command keyconv: Convert the provided RSA key (PEM or XML) into any supported format. {Environment.NewLine}" +
     $"    rsa keyconv <input-key-filePath>        The path of input key file. {Environment.NewLine}" +
-    $"                (or --cb-in: Get input from the clipboard.) {Environment.NewLine}" +
+    $"                (or --cb-in:                Get input from the clipboard.) {Environment.NewLine}" +
     $"                -o, --outkey [Key-Formats]  The output key type you demand. {Environment.NewLine}" +
-    $"                                            (Avaliable: Public, Private, Xml, Pkcs1, Pkcs8)";
+    $"                                            (Avaliable: Public, Private, Xml, Pkcs1, Pkcs8, Der)";
 
     public override async Task HandleAsync(string argList)
     {
         var args = ParseAsArgs(argList);
-        await DefaultCommandsParser.ParseArguments<RsaEncryptOption, RsaDecryptOption, RsaSignOption, RsaVerifyOption, RsaKeyConvertOption>(args)
+        await DefaultCommandsParser.ParseArguments<RsaEncryptOption, RsaDecryptOption, RsaSignOption, RsaVerifyOption, RsaGetKeyTypeOption, RsaKeyConvertOption>(args)
             .MapResult(
                 async (RsaEncryptOption opt) => await HandleEncryptAsync(opt),
                 async (RsaDecryptOption opt) => await HandleDecryptAsync(opt),
                 async (RsaSignOption opt) => await HandleSignAsync(opt),
                 async (RsaVerifyOption opt) => await HandleVerifyAsync(opt),
+                async (RsaGetKeyTypeOption opt) => await HandleGetKeyTypeAsync(opt),
                 async (RsaKeyConvertOption opt) => await HandleKeyConvertAsync(opt),
                 error =>
                 {

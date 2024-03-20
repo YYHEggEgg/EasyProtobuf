@@ -27,6 +27,12 @@ _Made by miHomo Software_
   - Convert bytes in Base64 & HEX
   - XOR Decrypt data
 
+## Updates
+
+### v1.1.0
+
+- Added support of `.der` RSA keys for all `rsa`'s subcommands.
+
 ## Requirements
 
 - [.NET 6.0 Runtime](https://dotnet.microsoft.com/en-us/download)
