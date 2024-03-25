@@ -1,6 +1,7 @@
 EasyProtobuf Build
 Protobuf-*/
 config-*.json
+.bash_history*
 
 # ------------------------
 
