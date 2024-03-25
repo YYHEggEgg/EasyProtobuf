@@ -10,7 +10,11 @@ internal static class CommandHistory
     public static IEnumerable<string> ReadSavedHistory()
     {
         var version = EasyProtobufProgram.protobuf_version;
-        var file = $"{HistoryFileName}.{version}";
+        // tbh i don't want to add a handling case for this,
+        // but cuz u can't create a file ends with '.' on
+        // Windows, that will lead to an implicit behaviour
+        // change. Better not.
+        var file = $"{HistoryFileName}{(version == null ? "" : $".{version}")}";
         if (File.Exists(file)) return File.ReadAllLines(file);
         else return Array.Empty<string>();
     }

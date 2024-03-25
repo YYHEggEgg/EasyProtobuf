@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="EggEgg.CSharp-Logger" Version="4.0.3-rc52" />
+    <PackageReference Include="EggEgg.CSharp-Logger" Version="4.0.3-rc53" />
     <PackageReference Include="EggEgg.XC.RSAUtil" Version="136.1.0-rc52" />
     <PackageReference Include="Google.Protobuf" Version="3.25.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
