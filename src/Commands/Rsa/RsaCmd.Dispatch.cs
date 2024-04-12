@@ -192,7 +192,8 @@ internal partial class RsaCmd : CommandHandlerBase
     $"    rsa keyconv <input-key-filePath>        The path of input key file. {Environment.NewLine}" +
     $"                (or --cb-in:                Get input from the clipboard.) {Environment.NewLine}" +
     $"                -o, --outkey [Key-Formats]  The output key type you demand. {Environment.NewLine}" +
-    $"                                            (Avaliable: Public, Private, Xml, Pkcs1, Pkcs8, Der)";
+    $"                                            (Avaliable: Public, Private, Xml, Pkcs1, Pkcs8, Der) {Environment.NewLine}" +
+    $"                -s, --save <save_path>      The path to save the converted key.";
 
     public override async Task HandleAsync(string argList)
     {

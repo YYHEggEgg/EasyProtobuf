@@ -1,6 +1,7 @@
 using System.Text;
 using XC.RSAUtil;
 using YYHEggEgg.EasyProtobuf.Util;
+using YYHEggEgg.Logger;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
@@ -48,6 +49,12 @@ internal partial class RsaCmd
 
         if (outputKeyType.Format == RsaKeyFormat.Invalid && (outputKeyType.Padding == RsaKeyPadding.Pkcs1 || outputKeyType.Padding == RsaKeyPadding.Pkcs8))
             outputKeyType.Format = RsaKeyFormat.Pem;
+        if (recordIsPrivate == null)
+        {
+            _logger.LogErro("Please specify whether to generate Public or Private key!");
+            return;
+        }
+        outputKeyType.IsPrivate = recordIsPrivate.Value;
 
         _logger.LogInfo($"Input key type: Format: {inputKeyType.Format}, Padding: {inputKeyType.Padding}, IsPrivate: {inputKeyType.IsPrivate}");
         _logger.LogInfo($"Output key type: Format: {outputKeyType.Format}, Padding: {outputKeyType.Padding}, IsPrivate: {outputKeyType.IsPrivate}");
