@@ -94,71 +94,40 @@ public static class ResourcesLoader
     #endregion
 
     #region Load
+    private static async Task LoadRSAKeys(string rsaDirBase, string entry, Dictionary<uint, RSAUtilBase> writeTarget)
+    {
+        var rsaKeysDir = Path.Combine(rsaDirBase, entry);
+        if (Directory.Exists(rsaKeysDir))
+        {
+            foreach (var file in Directory.GetFiles(rsaKeysDir))
+            {
+                FileInfo info = new(file);
+                if (info.Extension != ".pem" && info.Extension != ".xml" && info.Extension != ".der") continue;
+                var name = info.Name;
+                uint id = UInt32.Parse(name[0..name.IndexOf('-')]);
+                try
+                {
+                    byte[] rsaKey = await File.ReadAllBytesAsync(file);
+                    writeTarget.Add(id, RSAUtilBase.LoadRSAKey(rsaKey));
+                }
+                catch (Exception ex)
+                {
+                    LogTrace.WarnTrace(ex, nameof(ResourcesLoader), $"Load {entry} key id: {id} failed, skipped file: {file}.");
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Load resources to Resources Class.
     /// </summary>
     public static async Task Load(string resPath = "./resources")
     {
         #region RSAKeys
-        if (Directory.Exists($"{resPath}/rsakeys/ClientPri"))
-        {
-            foreach (var file in Directory.GetFiles($"{resPath}/rsakeys/ClientPri"))
-            {
-                FileInfo info = new(file);
-                if (info.Extension != ".pem" && info.Extension != ".xml") continue;
-                var name = info.Name;
-                uint id = UInt32.Parse(name[0..name.IndexOf('-')]);
-                try
-                {
-                    string pemKey = await File.ReadAllTextAsync(file);
-                    Resources.CPri.Add(id, RSAUtilBase.LoadRSAKey(pemKey));
-                }
-                catch (Exception ex)
-                {
-                    LogTrace.WarnTrace(ex, nameof(ResourcesLoader), $"Load ClientPri key id: {id} failed, skipped file: {file}.");
-                }
-            }
-        }
-        if (Directory.Exists($"{resPath}/rsakeys/ServerPub-Official"))
-        {
-            foreach (var file in Directory.GetFiles($"{resPath}/rsakeys/ServerPub-Official"))
-            {
-                FileInfo info = new(file);
-                if (info.Extension != ".pem" && info.Extension != ".xml") continue;
-                var name = info.Name;
-                uint id = UInt32.Parse(name[0..name.IndexOf('-')]);
-                try
-                {
-                    string pemKey = await File.ReadAllTextAsync(file);
-                    Resources.OfficialSPub.Add(id, RSAUtilBase.LoadRSAKey(pemKey));
-                }
-                catch (Exception ex)
-                {
-                    LogTrace.WarnTrace(ex, nameof(ResourcesLoader),
-                        $"Load ServerPub-Official key id: {id} failed, skipped file: {file}.");
-                }
-            }
-        }
-        if (Directory.Exists($"{resPath}/rsakeys/ServerPri-Hosting"))
-        {
-            foreach (var file in Directory.GetFiles($"{resPath}/rsakeys/ServerPri-Hosting"))
-            {
-                FileInfo info = new(file);
-                if (info.Extension != ".pem" && info.Extension != ".xml") continue;
-                var name = info.Name;
-                uint id = UInt32.Parse(name[0..name.IndexOf('-')]);
-                try
-                {
-                    string pemKey = await File.ReadAllTextAsync(file);
-                    Resources.LocalSPri.Add(id, RSAUtilBase.LoadRSAKey(pemKey));
-                }
-                catch (Exception ex)
-                {
-                    LogTrace.WarnTrace(ex, nameof(ResourcesLoader),
-                        $"Load ServerPri-Hosting key id: {id} failed, skipped file: {file}.");
-                }
-            }
-        }
+        var rsaDirBase = Path.Combine(resPath, Config.Global.RSAKeysDirectoryName);
+        await LoadRSAKeys(rsaDirBase, "ClientPri", Resources.CPri);
+        await LoadRSAKeys(rsaDirBase, "ServerPri-Hosting", Resources.LocalSPri);
+        await LoadRSAKeys(rsaDirBase, "ServerPub-Official", Resources.OfficialSPub);
         #endregion
 
         Resources.BasePath = resPath;

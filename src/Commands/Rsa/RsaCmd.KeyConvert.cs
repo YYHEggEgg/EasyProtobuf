@@ -1,27 +1,23 @@
 using System.Text;
 using XC.RSAUtil;
 using YYHEggEgg.EasyProtobuf.Util;
-using YYHEggEgg.Logger;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    private async Task HandleKeyConvertAsync(RsaKeyConvertOption o)
+    private RsaKeyFeature? ParseKeyTypeStrings(IEnumerable<string> keyTypeStrings)
     {
-        byte[] keyBin = await o.GetKeyBytesAsync();
-
-        var inputKeyType = RSAUtilBase.TreatRSAKeyType(keyBin);
         var outputKeyType = new RsaKeyFeature();
         bool? recordIsPrivate = null;
-        foreach (var opt in o.OutputKeyType)
+        foreach (var opt in keyTypeStrings)
         {
             if (opt == "Public" || opt == "Private")
             {
                 if (recordIsPrivate != null)
                 {
                     _logger.LogErro("Please specify Private or Public only once!");
-                    return;
+                    return null;
                 }
                 recordIsPrivate = opt == "Private";
                 continue;
@@ -32,7 +28,7 @@ internal partial class RsaCmd
                 if (outputKeyType.Padding != RsaKeyPadding.Invalid)
                 {
                     _logger.LogErro("Please specify key padding (Xml, Pkcs1, Pkcs8, Der) only once!");
-                    return;
+                    return null;
                 }
                 outputKeyType.Padding = padding;
             }
@@ -41,7 +37,7 @@ internal partial class RsaCmd
                 if (outputKeyType.Format != RsaKeyFormat.Invalid)
                 {
                     _logger.LogErro("Please specify key format (Xml, Pem, Der) only once!");
-                    return;
+                    return null;
                 }
                 outputKeyType.Format = format;
             }
@@ -52,9 +48,20 @@ internal partial class RsaCmd
         if (recordIsPrivate == null)
         {
             _logger.LogErro("Please specify whether to generate Public or Private key!");
-            return;
+            return null;
         }
         outputKeyType.IsPrivate = recordIsPrivate.Value;
+
+        return outputKeyType;
+    }
+
+    private async Task HandleKeyConvertAsync(RsaKeyConvertOption o)
+    {
+        byte[] keyBin = await o.GetKeyBytesAsync();
+
+        var inputKeyType = RSAUtilBase.TreatRSAKeyType(keyBin);
+        var outputKeyType = ParseKeyTypeStrings(o.OutputKeyType);
+        if (outputKeyType == null) return;
 
         _logger.LogInfo($"Input key type: Format: {inputKeyType.Format}, Padding: {inputKeyType.Padding}, IsPrivate: {inputKeyType.IsPrivate}");
         _logger.LogInfo($"Output key type: Format: {outputKeyType.Format}, Padding: {outputKeyType.Padding}, IsPrivate: {outputKeyType.IsPrivate}");
@@ -74,5 +81,5 @@ internal partial class RsaCmd
             Tools.SetClipBoard(Encoding.UTF8.GetString(res));
             _logger.LogInfo($"Key output to clipboard.");
         }
-    } 
+    }
 }

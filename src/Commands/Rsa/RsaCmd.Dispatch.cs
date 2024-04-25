@@ -47,6 +47,19 @@ internal class RsaGetKeyTypeOption : RsaKeyInputOptionBase
 {
 }
 
+[Verb("keygen", false, HelpText = "Generate a RSA key.")]
+internal class RsaKeyGenOption
+{
+    [Value(0, Required = true)]
+    public IEnumerable<string> OutputKeyType { get; set; }
+    [Option("save-pub", Required = true)]
+    public string SavePublicTo { get; set; }
+    [Option("save-pri", Required = true)]
+    public string SavePrivateTo { get; set; }
+    [Option("keysize", Required = true)]
+    public int KeySize { get; set; }
+}
+
 internal class RsaOperationOptionBase
 {
     [Value(0, Required = true, HelpText = "The data you want to operate on.")]
@@ -188,6 +201,12 @@ internal partial class RsaCmd : CommandHandlerBase
     $"    rsa get-keytype <input-key-filePath>  The path of input key file. {Environment.NewLine}" +
     $"                    (or --cb-in:          Get input from the clipboard.) {Environment.NewLine}" +
     $" {Environment.NewLine}" +
+    $"  command keygen: Generate a RSA key of the specified type and size. {Environment.NewLine}" +
+    $"    rsa keygen  [Key-Formats]               The output key type you demand. {Environment.NewLine}" +
+    $"                                            (Avaliable: Public, Private, Xml, Pkcs1, Pkcs8, Der) {Environment.NewLine}" +
+    $"                --save-pri/-pub <path>      The path to save the generated public & private key. {Environment.NewLine}" +
+    $"                --keysize <size_bits>       The key size of the generated key (e.g. 2048 (bits)). {Environment.NewLine}" +
+    $" {Environment.NewLine}" +
     $"  command keyconv: Convert the provided RSA key (PEM or XML) into any supported format. {Environment.NewLine}" +
     $"    rsa keyconv <input-key-filePath>        The path of input key file. {Environment.NewLine}" +
     $"                (or --cb-in:                Get input from the clipboard.) {Environment.NewLine}" +
@@ -198,13 +217,14 @@ internal partial class RsaCmd : CommandHandlerBase
     public override async Task HandleAsync(string argList)
     {
         var args = ParseAsArgs(argList);
-        await DefaultCommandsParser.ParseArguments<RsaEncryptOption, RsaDecryptOption, RsaSignOption, RsaVerifyOption, RsaGetKeyTypeOption, RsaKeyConvertOption>(args)
+        await DefaultCommandsParser.ParseArguments<RsaEncryptOption, RsaDecryptOption, RsaSignOption, RsaVerifyOption, RsaGetKeyTypeOption, RsaKeyGenOption, RsaKeyConvertOption>(args)
             .MapResult(
                 async (RsaEncryptOption opt) => await HandleEncryptAsync(opt),
                 async (RsaDecryptOption opt) => await HandleDecryptAsync(opt),
                 async (RsaSignOption opt) => await HandleSignAsync(opt),
                 async (RsaVerifyOption opt) => await HandleVerifyAsync(opt),
                 async (RsaGetKeyTypeOption opt) => await HandleGetKeyTypeAsync(opt),
+                async (RsaKeyGenOption opt) => await HandleKeyGenAsync(opt),
                 async (RsaKeyConvertOption opt) => await HandleKeyConvertAsync(opt),
                 error =>
                 {
