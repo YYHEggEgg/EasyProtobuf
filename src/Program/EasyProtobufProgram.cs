@@ -1,8 +1,4 @@
-﻿using CommandLine;
-using Google.Protobuf;
-using System.Globalization;
-using System.Reflection;
-using System.Text.RegularExpressions;
+﻿using System.Reflection;
 using YYHEggEgg.EasyProtobuf.Commands;
 using YYHEggEgg.EasyProtobuf.Configuration;
 using YYHEggEgg.EasyProtobuf.resLoader;
