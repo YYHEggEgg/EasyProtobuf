@@ -64,6 +64,7 @@ internal partial class EasyProtobufProgram
         _cmdAutoCmplHandler = new(handlers);
         var autoCmplHandler = new MultipleAutoCompletionHandler();
         autoCmplHandler.PushComponent(_cmdAutoCmplHandler);
+        autoCmplHandler.PushComponent(new FilePathAutoCompleteHandler());
         ConsoleWrapper.AutoCompleteHandler = autoCmplHandler;
 
         var helpstrings = CommandHandlerBase.HelpStrings;
