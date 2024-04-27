@@ -1,10 +1,11 @@
 using CommandLine;
+using YYHEggEgg.EasyProtobuf.Commands.AutoCompletion;
 using YYHEggEgg.EasyProtobuf.Util;
 using YYHEggEgg.Logger;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
-internal abstract class CommandHandlerBase
+internal abstract class CommandHandlerBase : IAutoCompleteHandler
 {
     public static List<string> ParseAsArgs(string cmd)
     {
@@ -123,6 +124,19 @@ internal abstract class CommandHandlerBase
             _logger.LogWarn(line ?? string.Empty);
         _logger.LogErro("Invalid input for param. Please view the errors and check your input.");
     }
+
+    /// <summary>
+    /// Get suggestions for this command. It is guaranteed
+    /// that when it's invoked, the user is surely typing
+    /// parameters for THIS command.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public virtual SuggestionResult GetSuggestions(string text, int index)
+    {
+        return new();
+    }
 }
 
 /// <summary>
@@ -160,5 +174,11 @@ internal abstract class StandardCommandHandler<TCmdOption> : CommandHandlerBase
                 .WithParsedAsync(opt => HandleAsync(opt));
         }
         catch (AccessViolationException) { }
+    }
+
+    private OptionsAutoCompleteHandler<TCmdOption> _standardAutoCompleteHandler = new();
+    public override SuggestionResult GetSuggestions(string text, int index)
+    {
+        return _standardAutoCompleteHandler.GetSuggestions(text, index);
     }
 }

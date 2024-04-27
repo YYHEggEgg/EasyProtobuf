@@ -1,4 +1,6 @@
 using YYHEggEgg.EasyProtobuf.Commands;
+using YYHEggEgg.EasyProtobuf.Commands.AutoCompletion;
+using YYHEggEgg.EasyProtobuf.src.Commands.AutoCompletion;
 using YYHEggEgg.EasyProtobuf.Util;
 using YYHEggEgg.Logger;
 
@@ -37,6 +39,7 @@ internal partial class EasyProtobufProgram
     private static EasyProtobufProgram protobufWorker;
     public static List<CommandHandlerBase> handlers = new();
     private static CommandAutoCompleteHandler? _cmdAutoCmplHandler;
+    private static DispatchOptionsAutoCompleteHandler? _optionsAutoCmplHandler;
     public static void ShowHelps()
     {
         foreach (var handler in handlers)
@@ -62,9 +65,11 @@ internal partial class EasyProtobufProgram
             await stopProgram.HandleAsync(string.Empty);
         };
         _cmdAutoCmplHandler = new(handlers);
+        _optionsAutoCmplHandler = new(handlers);
         var autoCmplHandler = new MultipleAutoCompletionHandler();
         autoCmplHandler.PushComponent(_cmdAutoCmplHandler);
         autoCmplHandler.PushComponent(new FilePathAutoCompleteHandler());
+        autoCmplHandler.PushComponent(_optionsAutoCmplHandler);
         ConsoleWrapper.AutoCompleteHandler = autoCmplHandler;
 
         var helpstrings = CommandHandlerBase.HelpStrings;

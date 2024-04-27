@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <Version>1.1.0</Version>
     <MainEntryPoint>YYHEggEgg.EasyProtobuf.EasyProtobufProgram</MainEntryPoint>
+    <RootNamespace>YYHEggEgg.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,12 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protobuf-$(protobuf_version)/*.proto" 
-              ProtoRoot="Protobuf-$(protobuf_version)" 
-              GrpcServices="None" />
-    <Protobuf Include="Protobuf-$(protobuf_version)/Protos/*.proto" 
-              ProtoRoot="Protobuf-$(protobuf_version)/Protos" 
-              GrpcServices="None" />
+    <Protobuf Include="Protobuf-$(protobuf_version)/*.proto" ProtoRoot="Protobuf-$(protobuf_version)" GrpcServices="None" />
+    <Protobuf Include="Protobuf-$(protobuf_version)/Protos/*.proto" ProtoRoot="Protobuf-$(protobuf_version)/Protos" GrpcServices="None" />
   </ItemGroup>
 
 </Project>
