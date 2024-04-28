@@ -4,15 +4,17 @@ using YYHEggEgg.Logger;
 
 namespace YYHEggEgg.EasyProtobuf.Commands.AutoCompletion;
 
-public class OptionsAutoCompleteHandler<TOptions> : IAutoCompleteHandler
+public class OptionsAutoCompleteHandler : IAutoCompleteHandler
 {
     private List<string> _autoCmplOptions;
     private Dictionary<string, string> _availableOptions;
+    private Type _optType;
 
-    public OptionsAutoCompleteHandler()
+    public OptionsAutoCompleteHandler(Type optType)
     {
         _autoCmplOptions = [];
         _availableOptions = [];
+        _optType = optType;
         InitializeOptions();
     }
 
@@ -56,8 +58,7 @@ public class OptionsAutoCompleteHandler<TOptions> : IAutoCompleteHandler
 
     private void InitializeOptions()
     {
-        var optType = typeof(TOptions);
-        var properties = optType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.SetProperty);
+        var properties = _optType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.SetProperty);
         foreach (var property in properties)
         {
             var optAttr = property.GetCustomAttribute<OptionAttribute>();
@@ -71,5 +72,12 @@ public class OptionsAutoCompleteHandler<TOptions> : IAutoCompleteHandler
             if (!string.IsNullOrEmpty(optAttr.LongName))
                 _availableOptions.Add($"--{optAttr.LongName}", optName);
         }
+    }
+}
+
+public class OptionsAutoCompleteHandler<TOptions> : OptionsAutoCompleteHandler
+{
+    public OptionsAutoCompleteHandler() : base(typeof(TOptions))
+    {
     }
 }
