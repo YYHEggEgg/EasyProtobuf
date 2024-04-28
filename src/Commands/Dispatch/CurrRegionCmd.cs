@@ -56,13 +56,13 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             catch (JsonReaderException jex)
             {
                 _logger.LogErro($"Decryption failed: {jex}");
-                _logger.LogWarn($"It may because you provided false query_cur_region json.");
+                _logger.LogWarn($"It may because you provided a bad-formatted json.");
                 return;
             }
             catch (KeyNotFoundException kex)
             {
                 _logger.LogErro($"Decryption failed: {kex}");
-                _logger.LogWarn($"It may because you provided false query_cur_region json.");
+                _logger.LogWarn($"It may because you requested keys that haven't been placed in resources.");
                 return;
             }
             catch (Exception ex)
@@ -85,6 +85,12 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                     $"You may check whether a correct RSA key is configured.");
             }
             await Tools.SetClipBoardAsync(res);
+        }
+
+        private CurrRegionCmdsAutoCompleteHandler _autoCmplHandler = new(true);
+        public override SuggestionResult GetSuggestions(string text, int index)
+        {
+            return _autoCmplHandler.GetSuggestions(text, index);
         }
     }
 
@@ -128,6 +134,18 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                     res = CurrExtend.GetJsonFromCurrJson(read.ProcessedString ?? string.Empty, Resources.CPri[key_id], Resources.LocalSPri[key_id]);
                 }
             }
+            catch (JsonReaderException jex)
+            {
+                _logger.LogErro($"Encryption failed: {jex}");
+                _logger.LogWarn($"It may because you provided a bad-formatted json.");
+                return;
+            }
+            catch (KeyNotFoundException kex)
+            {
+                _logger.LogErro($"Encryption failed: {kex}");
+                _logger.LogWarn($"It may because you requested keys that haven't been placed in resources.");
+                return;
+            }
             catch (Exception ex)
             {
                 _logger.LogErroTrace(ex, 
@@ -155,6 +173,12 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                     $"in resources/ClientPri and resources/ServerPri.");
                 return;
             }
+        }
+
+        private CurrRegionCmdsAutoCompleteHandler _autoCmplHandler = new(false);
+        public override SuggestionResult GetSuggestions(string text, int index)
+        {
+            return _autoCmplHandler.GetSuggestions(text, index);
         }
     }
 }

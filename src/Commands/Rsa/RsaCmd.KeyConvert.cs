@@ -55,7 +55,7 @@ internal partial class RsaCmd
         return outputKeyType;
     }
 
-    private async Task HandleKeyConvertAsync(RsaKeyConvertOption o)
+    public override async Task HandleAsync(RsaKeyConvertOption o)
     {
         byte[] keyBin = await o.GetKeyBytesAsync();
 

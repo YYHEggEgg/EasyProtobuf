@@ -4,7 +4,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    private async Task HandleEncryptAsync(RsaEncryptOption o)
+    public override async Task HandleAsync(RsaEncryptOption o)
     {
         var rsa = o.GetRSAWorker();
         var rawdata = o.Data;

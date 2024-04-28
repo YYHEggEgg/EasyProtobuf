@@ -2,7 +2,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    private Task HandleVerifyAsync(RsaVerifyOption o)
+    public override Task HandleAsync(RsaVerifyOption o)
     {
         var rsa = o.GetRSAWorker();
         var rawdata = o.Data;

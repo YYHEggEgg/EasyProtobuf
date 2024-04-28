@@ -27,6 +27,7 @@ public class OptionsAutoCompleteHandler : IAutoCompleteHandler
 
         var startIndex = index;
         var endIndex = text.IndexOf(' ', index);
+        if (endIndex == -1) endIndex = text.Length;
         var replaced = text[startIndex..endIndex];
         if (replaced.Contains('"')) return new();
 

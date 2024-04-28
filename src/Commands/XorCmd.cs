@@ -25,7 +25,7 @@ internal class XorOperateOption
 }
 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
-internal class XorCmd : CommandHandlerBase
+internal class XorCmd : HasSubCommandsHandlerBase<XorOperateOption, XorSetDefaultKeyOption>
 {
     public override string CommandName => "xor";
 
@@ -47,32 +47,16 @@ internal class XorCmd : CommandHandlerBase
         $" {Environment.NewLine}" +
         $"Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>";
 
-    public override async Task HandleAsync(string argList)
-    {
-        var parseres = ParseAsArgs(argList);
-        await DefaultCommandsParser.ParseArguments<XorOperateOption, XorSetDefaultKeyOption>(parseres)
-            .MapResult(
-                async (XorOperateOption opt) => await HandleOperateAsync(opt),
-                async (XorSetDefaultKeyOption opt) => await HandleSetDefaultKeyAsync(opt),
-                error =>
-                {
-                    OutputInvalidUsage(error);
-                    ShowUsage();
-                    return Task.CompletedTask;
-                }
-            );
-    }
-
     private byte[]? default_key = null;
 
-    private Task HandleSetDefaultKeyAsync(XorSetDefaultKeyOption opt)
+    public override Task HandleAsync(XorSetDefaultKeyOption opt)
     {
         default_key = EasyInput.TryPreProcess(opt.Key).ToByteArray();
         _logger.LogInfo($"Successfully set default key: {default_key.Length} bytes.");
         return Task.CompletedTask;
     }
 
-    private async Task HandleOperateAsync(XorOperateOption opt)
+    public override async Task HandleAsync(XorOperateOption opt)
     {
         byte[]? key = default_key;
         if (opt.Key != null && opt.Key.Any()) key = EasyInput.TryPreProcess(opt.Key).ToByteArray();

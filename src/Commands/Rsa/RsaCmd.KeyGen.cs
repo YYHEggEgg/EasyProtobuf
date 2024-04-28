@@ -4,7 +4,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    private async Task HandleKeyGenAsync(RsaKeyGenOption o)
+    public override async Task HandleAsync(RsaKeyGenOption o)
     {
         var keyType = ParseKeyTypeStrings(o.OutputKeyType);
         if (keyType == null) return;

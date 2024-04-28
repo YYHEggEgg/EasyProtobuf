@@ -4,7 +4,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    private async Task HandleGetKeyTypeAsync(RsaGetKeyTypeOption o)
+    public override async Task HandleAsync(RsaGetKeyTypeOption o)
     {
         var keyBin = await o.GetKeyBytesAsync();
         var keyType = RSAUtilBase.TreatRSAKeyType(keyBin);

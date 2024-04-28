@@ -155,7 +155,7 @@ internal class RsaVerifyOption : RsaVerificationOptionBase
 }
 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
-internal partial class RsaCmd : CommandHandlerBase
+internal partial class RsaCmd : HasSubCommandsHandlerBase<RsaEncryptOption, RsaDecryptOption, RsaSignOption, RsaVerifyOption, RsaGetKeyTypeOption, RsaKeyGenOption, RsaKeyConvertOption>
 {
     public override string CommandName => "rsa";
 
@@ -213,24 +213,4 @@ internal partial class RsaCmd : CommandHandlerBase
     $"                -o, --outkey [Key-Formats]  The output key type you demand. {Environment.NewLine}" +
     $"                                            (Avaliable: Public, Private, Xml, Pkcs1, Pkcs8, Der) {Environment.NewLine}" +
     $"                -s, --save <save_path>      The path to save the converted key.";
-
-    public override async Task HandleAsync(string argList)
-    {
-        var args = ParseAsArgs(argList);
-        await DefaultCommandsParser.ParseArguments<RsaEncryptOption, RsaDecryptOption, RsaSignOption, RsaVerifyOption, RsaGetKeyTypeOption, RsaKeyGenOption, RsaKeyConvertOption>(args)
-            .MapResult(
-                async (RsaEncryptOption opt) => await HandleEncryptAsync(opt),
-                async (RsaDecryptOption opt) => await HandleDecryptAsync(opt),
-                async (RsaSignOption opt) => await HandleSignAsync(opt),
-                async (RsaVerifyOption opt) => await HandleVerifyAsync(opt),
-                async (RsaGetKeyTypeOption opt) => await HandleGetKeyTypeAsync(opt),
-                async (RsaKeyGenOption opt) => await HandleKeyGenAsync(opt),
-                async (RsaKeyConvertOption opt) => await HandleKeyConvertAsync(opt),
-                error =>
-                {
-                    OutputInvalidUsage(error);
-                    ShowUsage();
-                    return Task.CompletedTask;
-                });
-    }
 }

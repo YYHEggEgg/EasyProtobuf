@@ -54,7 +54,7 @@ internal class MT19937FromRSAOption : MT19937GenKeyOptionBase
 }
 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
-internal class MT19937Cmd : CommandHandlerBase
+internal class MT19937Cmd : HasSubCommandsHandlerBase<MT19937DirectGenOption, MT19937FromRSAOption>
 {
     public override string CommandName => "mt19937";
 
@@ -73,22 +73,7 @@ internal class MT19937Cmd : CommandHandlerBase
         $"{Environment.NewLine}" +
         $"Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>";
 
-    public override async Task HandleAsync(string argList)
-    {
-        var args = ParseAsArgs(argList);
-        await DefaultCommandsParser.ParseArguments<MT19937DirectGenOption, MT19937FromRSAOption>(args)
-            .MapResult(
-                async (MT19937DirectGenOption o) => await HandleDirectGenAsync(o),
-                async (MT19937FromRSAOption o) => await HandleFromRSAAsync(o),
-                error =>
-                {
-                    OutputInvalidUsage(error);
-                    ShowUsage();
-                    return Task.CompletedTask;
-                });
-    }
-
-    private Task HandleFromRSAAsync(MT19937FromRSAOption o)
+    public override Task HandleAsync(MT19937FromRSAOption o)
     {
         if (!o.ReportAvaliableOption(_logger)) return Task.CompletedTask;
 
@@ -113,7 +98,7 @@ internal class MT19937Cmd : CommandHandlerBase
         return Task.CompletedTask;
     }
 
-    private Task HandleDirectGenAsync(MT19937DirectGenOption o)
+    public override Task HandleAsync(MT19937DirectGenOption o)
     {
         if (!ulong.TryParse(o.InputSeed, out ulong seed))
         {

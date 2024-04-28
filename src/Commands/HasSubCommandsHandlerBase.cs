@@ -42,7 +42,7 @@ internal abstract class HasSubCommandsHandlerBase : CommandHandlerBase
         if (index <= args[0].Length) return new();
         var subCommand = args.Count > 1 ? args[1] : string.Empty;
 
-        if (args.Count > 2)
+        if (args.Count > 2 || (args.Count == 2 && text[index - 1] == ' '))
         {
             if (!_subCommandAliasesMap.TryGetValue(subCommand, out var subCommandDef) && !_subCommandAliasesMap.TryGetValue(string.Empty, out subCommandDef))
                 return new();
