@@ -18,6 +18,8 @@ _Made by miHomo Software_
   - **Unknown Fields (not defined in your proto) detection**
 - RSA
   - Basic RSA Encrypt / Decrypt / Sign / Verify
+  - Query the format info of a RSA key
+  - Generate a RSA key of specified format
   - **Convert RSA Keys through different formats (including Private -> Public)**
   - `query_cur_region` decryption & generation
 - More Dedicated Applications
@@ -31,7 +33,33 @@ _Made by miHomo Software_
 
 ### v1.1.0
 
+#### 'Bash History'
+
+When using the same command to launch EasyProtobuf, your command history will be preserved locally and recovered next time.
+
+#### `rsa` command
+
 - Added support of `.der` RSA keys for all `rsa`'s subcommands.
+- Added `keygen` and `get-keytype` subcommand. For more information, please refer to the handbook.
+
+#### Auto Completion
+
+A simple Auto Completion is now supported! You can use `Tab` & `Shift+Tab` to switch in suggestions.
+
+It can fill out:
+
+- The command / subcommand names:
+  ![Command Name Completion](gifs/command_names.gif)
+
+- Proto name:
+  ![Proto Name Completion](gifs/proto_names.gif)
+
+- Command option names:
+  ![Command Options Completion](gifs/command_options.gif)
+
+- Place your cursor in a pair of `""` to trigger file path completion. Please notice that you should **add a path separator** to show you're trying to enumerate a directory, not the peers of the specified file/directory.
+  ![File Path Completion](gifs/file_path_complete.gif)
+
 
 ## Requirements
 

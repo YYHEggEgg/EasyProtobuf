@@ -1,6 +1,6 @@
 EN | [中文](Handbook_CN.md)
 
-# EasyProtobuf Handbook (v1.0.0+)
+# EasyProtobuf Handbook (v1.1.0+)
 
 This program was originally designed for Protobuf operations. But to help you complete some simple daily tasks, this program also provides some utility commands.
 
@@ -23,6 +23,8 @@ Then copy `config_example.json` to `config-hk4e_3.4_gio-cmdid.json`, and uncomme
 - [`gencur` Command](#gencur-command)
 - [`convert` Command](#convert-command)
 - [`ec2b` Command](#ec2b-command)
+  - [`get_key` Subcommand (default)](#get_key-subcommand-default)
+  - [`encrypt` Subcommand](#encrypt-subcommand)
 - [`mt19937` Command](#mt19937-command)
   - [`rsa` Subcommand (default)](#rsa-subcommand-default)
   - [`from-seed` Subcommand](#from-seed-subcommand)
@@ -30,11 +32,12 @@ Then copy `config_example.json` to `config-hk4e_3.4_gio-cmdid.json`, and uncomme
   - [`set-key` Subcommand](#set-key-subcommand)
   - [`operate` Subcommand (default)](#operate-subcommand-default)
 - [`rsa` Command](#rsa-command)
-  - [`encrypt` Subcommand](#encrypt-subcommand)
+  - [`encrypt` Subcommand](#encrypt-subcommand-1)
   - [`decrypt` Subcommand](#decrypt-subcommand)
   - [`sign` Subcommand](#sign-subcommand)
   - [`verify` Subcommand](#verify-subcommand)
   - [`get-keytype` Subcommand](#get-keytype-subcommand)
+  - [`keygen` Subcommand](#keygen-subcommand)
   - [`keyconv` Subcommand](#keyconv-subcommand)
 
 ## Protobuf Operations
@@ -89,6 +92,8 @@ The following output will be produced:
 
 `key_id` is the number of the RSA key pair to be used (which can be found in `resources/rsakeys`). This command requires that the corresponding key pair has been defined in `ClientPri` and `ServerPub-Official`.
 
+You can press `Tab` after entering `dcurr[space]` to automatically fill in and find your correctly configured and program-loaded key list. If you have made changes to the RSA key folder, you need to restart the program to apply.
+
 `curr_json` is the body content of the received HTTP response, and the JSON should contain `content` and `sign`. Please note that since `curr_json` must be single-line, the following principles must be followed when pasting multi-line text to the console:
 
 - If you are using the console on your local machine or the integrated terminal of VSCode, you can paste directly by pressing Ctrl + V;
@@ -127,6 +132,8 @@ The following output will be similar to below:
 ### Annotation
 
 `key_id` is the number of the RSA key pair to be used (which can be found in `resources/rsakeys`). This command requires that the corresponding key pair has been defined in `ClientPri` and `ServerPri-Hosting`.
+
+You can press `Tab` after entering `gencur[space]` to automatically fill in and find your correctly configured and program-loaded key list. If you have made changes to the RSA key folder, you need to restart the program to apply.
 
 The format of the parameter `<protobuf_content>` may be different from that obtained in other ways: it uses camel case naming except for the first letter, instead of the underscore form used in the original proto. For example, `region_info` is named `regionInfo` in it.
 
@@ -172,13 +179,17 @@ For notes on pasting content to the console, please refer to the [`dcurr` comman
 
 ## `ec2b` command
 
-The `ec2b` command can obtain the `server_secret_key` (also known as `dispatchKey`) through the `client_secret_key` (also known as `dispatchSeed`).
+Do operations related to Ec2b Algorithm.
+
+### `get_key` Subcommand (default)
+
+Obtain the `server_secret_key` (also known as `dispatchKey`) through the `client_secret_key` (also known as `dispatchSeed`).
 
 ```sh
 ec2b get_key <content_bindata(base64/hex)>
 ```
 
-### Example
+#### Example
 
 The following command will decrypt an `Ec2b` dispatchSeed:
 
@@ -202,12 +213,41 @@ The following output will be produced:
 
 </details>
 
-### Annotation
+#### Annotation
 
 Generally speaking, you can find the `client_secret_key` (that is, `dispatchSeed`) in `QueryCurrRegionHttpRsp`, but the server actually uses `dispatchKey` as the initial XOR key.
 
 For instructions on supporting multiple input types at the same time, please refer to the [`convert` command](#convert-command).  
 For notes on pasting content to the console, please refer to the [`dcurr` command](#dcurr-command).
+
+### `encrypt` Subcommand
+
+Generate the `server_secret_key` of the `Ec2b` key pair using the specified numerical seed.
+
+#### Example
+
+The following command generates an Ec2b key with the seed `6167`.
+
+```sh
+ec2b encrypt 6167
+```
+
+The following output will be produced:
+
+<details> <summary>Click to expand the example output</summary>
+
+```log
+21:23:41 <Info:ec2b> 456332621000000064E9C01279592A2BB0E249716F515C6700080000E27AAD2BBBACAA33BAECDD0499E4515161A4F7F2C696E864578FD9660E83E2622F21C8B2F341160FE7339A4A0983CE69E508942EE4877E227B44ED9F17E1A64F97A8D3EADE7ADF73FBD987104A1A397A551DA158E241F752D3B78D1777275558EB88D7E0FC138A7D0C1446A1136E2B4B8B1CB6F723DBB37447E945D641FB4353B700DC86913F971ED10BE9539D388C274D9D0CE376B9BD3C7CB13319FD98AB6AB6E82BC5799175555E585A1F9AE256394A14A73550CA212052A97101A4AAF63A642B1D719CCC9C1BCEC703061D69935805078C0555AC2D1FC68BF9A418BB615E8372ED76205FE039CF207E54E537BD1E47D9BAA6459BCD2C4227C50B9B8F371A7820648FE15E261758473CAD5C887F0720D11C50F5CA5709EFBA354C4EE7B51471ADF59F3A85892387592C3FD827670C210656EA636066056E38B17BFE28E32650B383006382CD0714F7C50B53B4C864413E58F798158A7EDBEFF827F7C7106408BB0D8A5CB0AD0362B44A88BF4C4D1A5D20BFC5ADA54E1E45EF533C48326C006C28D91E9D1046590D9679A47A881D4F7D3AC788626EF93577C4828199C958087B3C2C48A3AE85403CF743E4AE65196CEC4D0343A187047AC9F39E533BE8BC4132A81251C7371D473EA571FA9B2E7D7FAD94AED5D6361A2D8AFE74AA0AAF7A09C76F9B67BFC84E464ACA7647CCAC830DC621D870F05F7E414BC8D0A523CE4A30B9FFF37D7A4E5900FE281873C5323B2592632969B3118B16F7674357B35B61125A9CC0CD4A508674A660B4CF0B393307DF25D2258A379E5F3C0DC512E26FD37D0A0B7DE8DF57F76163502D23945F1D39F9C7A61A88BE0F76D2D0CD7E3F2F45376E77DFEA3AD61E132AE224A7BA3F790D605EA1E8F5252242E45F3B531E9AB129D449E803B8C81A41654F80D5A9193A235E7D65828E70D302A03D06905A7A4B0BBEF00C0F7E6E337C59C14D6FC564456087E7E45B440E8674EBD3286ADD4A6B053CFBAFFBFFBE270D9F6D534741FE2F1C8E2131C4FB6D061B9BFCA21AA1597D06F1B0B613CD60D63066E01696339F8049FE4301AC1350C723C2DFC01CAAAFA728AA400220EACF137D079952705A5BE6791A2FFABE7DF7C00AACFCCEE5A7DE04577D0B2C982C4F81241C1C08E3F51C8141546663ADE91CA96089A6ECC7B7F58F586F6A30FD9C51EA43FBD8B9E2B5186803AAF74F2A56D7F1480973AF2DA7B3B03EB60C94ADF3C936066F7511EC71F9211D44EEFD85CB8DF623C9412B4F25816862269FCC5B462105283F317E470CF1895FCA9337C81859737B57DA17001355235432CCF1D4F74905231681E05732F1050509E685AF39D697513FF86D7E5A577F082C2AFF8EADB94C31C74147370E3B056977C1C2608725F422342F643BB4B05A7B856155AB473DCC5B255A5E1D24EFD21BF7785276222B7D7A8A804DA93CA4C704D38AFB519023CD04B5965DB1B0BEEA3D5792077FB2DA2D0EE5658C3B06E25375500308C01714CD3D476E99E50229A3730C168752D1F3CD6F7B7D1C56F226D40EF6B9CC5B1A904D506427A58852A8B440ADF8A3619482637E84EC29ED9C8585664CC8F85EA96FB13D6F6A44DAB6289533541FC7A449B92B1272DA79963E7E9866BF4D94FA240BC732D0AB1F971500094009BDA5C94B30A562A055CFB73F60C1738399D3331C22C2711A8EEFE9E5ED266098699E0DCA0CB03DCCF766D827F03F0ABDF119364EB0B170B1143A2BBC181778C3B830A9E523DD0E772A66ABB6965E6E88826F69F7CAC840714197814F7BC35D15A051BDE4C07B61521910A37FF53E6458377B1ECFCEDB26F6D1B672213DBC26037F0AFE62E33722B034CA02B67971615EDC70C04989A774D82B2FABD3D5DE3CBD496AF924F1BA762914C0550EDE5957234A32498183A84068F17F3D269C462E26B16A36AA90FC4EF38E933033E7037B50A5005D9B352B7B7B799C2039D94B656E1615658797190B231377DE1BA16F634EBF72055DB9CA40AB6637995913567D1028175652503A7ECF94E77B15A9FD6C28F5783961A55459AD93C99836AF7666D93E8E5CB97DE20412A701C3C2F365778D59DB4268DEA37ACAD3A6B7CA181244AB7C8AE1433E2D6C6F894F8EBB3B813C4AD81BBD8C22A97F1F6F514302F3DA2E05B6AD77ACD2DF457B5F0064A702636D8B55DAFA219D197EB4120DFED19D5B1772F72CAB2E088268CF58BA38283D030772EA1CFDEA00483B09F04BE96F49AC0C93A9008498604030A008FCC7029CBB54A496345921E36A57CFDC2A68D1AB8B72D124035373155E083B94A97F05820762D29EFD70D951EA4940DFA7FA772B591574C85DA387A37822BFFD2AEBCFCCA92484EC87206856A6022E6546F8A9DE66318D96926333529F36F1E1384E4ECA5B44CAA89F41654AB7345801A9448ED8624C9BCE556139380B5A16B37D81DD562353E002B914D072FD48F3F02F6BE384B4727F5D5F31E51FFC62663F157EF80F66599ED569A1DEFEED5ED74D86DB3E73CD6CD7BED321BC9E1765A69DC76A7C1E114499CD71A8909ADA1175DB4D5050E13A755E2B9F4026B40227FDE1EF9398F74040FD4EB8ACA55E3176EA1F69D57B51403D4B3ED79648CB8577C9943FD7E2B11F3FD4B6D752830AD3676CB0B31B8999D0613A89A47D696337717C36EA8FE7C0E61AFC2DADD9C3213F0F4613526E163D5D0AA3942B9E813AED1383D3A102682521464B543C34CE40966A06502CF0AEBFB07EBCEFB193B41DEB216CF5A81DF47EF042139192973D1936093F7B5B04EC811E674A8855825CFC1304A98830DFCC50E45B1D1343FFCE979759BA7DBB2131A27B05C4560CC5FE51114B3F580F3F259A5157882C6882829FA859365C6704D025411E2E6649EDBEED4C3140097747BBDAD50A
+21:23:41 <Info:SetClipBoard> Result copied to clipboard.
+```
+
+</details>
+
+#### Annotation
+
+Ec2b is not a bidirectional algorithm, you cannot restore the `client_secret_key` from the `server_secret_key`, nor can you generate its seed from either of them.
+
+For more information on Ec2b terms, please refer to the [`get_key` subcommand (default)](#get_key-subcommand-default).
 
 ## `mt19937` command
 
@@ -602,6 +642,35 @@ If you need to know what kind of key your program requires, you can analyze the 
 
 [![Latest version](https://img.shields.io/nuget/v/EggEgg.XC.RSAUtil.svg?style=flat-square)](https://www.nuget.org/packages/EggEgg.XC.RSAUtil/)
 
+### `keygen` Subcommand
+
+Generate a pair of RSA keys.
+
+```sh
+rsa keygen  [Key-Formats]               The output key type you demand.
+                                        (Available: Public, Private, Xml, Pkcs1, Pkcs8, Der)
+            --save-pri <path>      The path to save the generated private key.
+            --save-pub <path>      The path to save the generated public key.
+            --keysize <size_bits>       The key size of the generated key (e.g. 2048 (bits)).
+```
+
+#### Example
+
+The following command generates a 3072-bit RSA key in Der format with PKCS#1 padding.
+
+```sh
+rsa keygen Der Pkcs1 --keysize 3072
+  --save-pri private.der --save-pub public.der
+```
+
+#### Annotation
+
+This command supports any combination of `Public`, `Private`, `Pkcs1`, `Pkcs8`, `Xml`, `Der` (v1.1.0+).
+
+If you do not specify `Der` but specify `Pkcs1` or `Pkcs8`, it will be assumed that you need a PEM format key.
+
+You must provide both `--save-pri` and `--save-pub`.
+
 ### `keyconv` Subcommand
 
 Convert the provided RSA key (PEM or XML format) to any supported format.
@@ -677,6 +746,8 @@ At this time, the output should be exactly the same as before.
 This command supports any combination of `Public`, `Private` and `Pkcs1`, `Pkcs8`, `Xml`, `Der` (v1.1.0+), except:
 
 - Public key (`Public`) cannot be used to generate private key (`Private`).
+
+If you do not specify `Der` but specify `Pkcs1` or `Pkcs8`, it will be assumed that you need a PEM format key.
 
 The type of the input key will be automatically detected, so there is no need to specify. The type identifier of the RSA key output format can be separated by spaces.
 

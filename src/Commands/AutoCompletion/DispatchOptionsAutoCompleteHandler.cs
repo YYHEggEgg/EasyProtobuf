@@ -20,8 +20,7 @@ internal class DispatchOptionsAutoCompleteHandler : IAutoCompleteHandler
     public SuggestionResult GetSuggestions(string text, int index)
     {
         var separaorIdx = text.IndexOf(' ');
-        if (separaorIdx < 0)
-            throw new NotImplementedException();
+        if (separaorIdx < 0) return new();
         var commandName = text[..separaorIdx];
         var handler = _handlers.Where(x => x.CommandName == commandName).FirstOrDefault();
         if (handler == null) return new();

@@ -41,7 +41,7 @@ if (!(Test-Path -Path "config-$protocol_ver.json" -PathType Leaf)) {
   Copy-Item "config_example.json" "config-$protocol_ver.json"
 }
 Copy-Item "config-$protocol_ver.json" "EasyProtobuf Build/$protocol_ver/config-$protocol_ver.json" -force
-Copy-Item resources "EasyProtobuf Build/$protocol_ver/resources" -recurse -force
+Copy-Item resources "EasyProtobuf Build/$protocol_ver" -recurse -force
 Copy-Item "Handbook.md" "EasyProtobuf Build/$protocol_ver/Handbook.md" -force
 Copy-Item "Handbook_CN.md" "EasyProtobuf Build/$protocol_ver/Handbook_CN.md" -force
 Copy-Item "LICENSE" "EasyProtobuf Build/$protocol_ver/LICENSE" -force

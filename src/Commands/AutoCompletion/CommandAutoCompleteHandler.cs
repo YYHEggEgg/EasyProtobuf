@@ -16,10 +16,10 @@ internal class CommandAutoCompleteHandler : IAutoCompleteHandler
         _commandNames = commands.Select(x => x.CommandName);
         var conf = Config.Global.EasyProtobufProgram;
         var protoNamespace = conf?.ProtoRootNamespace;
-        _protoNames = from type in Assembly.GetExecutingAssembly().GetTypes()
-                      where type.IsGenericType && type.IsAssignableTo(typeof(IMessage))
-                      where type.FullName != null && (protoNamespace == null || type.FullName.StartsWith(protoNamespace) == true)
-                      select type.FullName![(protoNamespace?.Length ?? 0)..];
+        _protoNames = (from type in Assembly.GetExecutingAssembly().GetTypes()
+                       where type.IsAssignableTo(typeof(IMessage))
+                       where type.FullName != null && (protoNamespace == null || type.FullName.StartsWith(protoNamespace) == true)
+                       select type.FullName![(protoNamespace == null ? 0 : protoNamespace.Length + 1)..]).ToList();
     }
 
     private static IEnumerable<string> MatchByName(IEnumerable<string> strings, string text, int index)
