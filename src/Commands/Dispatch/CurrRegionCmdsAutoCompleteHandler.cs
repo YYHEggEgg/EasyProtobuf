@@ -17,8 +17,7 @@ internal class CurrRegionCmdsAutoCompleteHandler(bool requireSPub) : IAutoComple
         if (index <= text.TrimEnd().Length) return new();
         
         var keyIds = Resources.CPri.Keys
-            .Intersect(Resources.LocalSPri.Keys);
-        if (requireSPub) keyIds = keyIds.Intersect(Resources.OfficialSPub.Keys);
+            .Intersect(requireSPub ? Resources.OfficialSPub.Keys : Resources.LocalSPri.Keys);
         return new()
         {
             Suggestions = keyIds.Select(x => x.ToString()).ToList(),
