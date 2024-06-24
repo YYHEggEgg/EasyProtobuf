@@ -1,7 +1,8 @@
 {
   "$schema": "resources/config-schemas/config_schema_latest.json",
-  "ConfigVersion": "1.0.0",
+  "ConfigVersion": "1.1.0",
   "EnableRecordCommandHistory": true,
+  "RestoreHistoryOnRestart": true,
   "RSAKeysDirectoryName": "rsakeys",
   "EasyProtobufProgram": {
     // "ProtoRootNamespace": "MiHomo.Protos"

@@ -31,8 +31,6 @@ _Made by miHomo Software_
 
 ## Updates
 
-### v1.1.0
-
 #### 'Bash History'
 
 When using the same command to launch EasyProtobuf, your command history will be preserved locally and recovered next time.

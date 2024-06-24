@@ -84,7 +84,7 @@ namespace YYHEggEgg.EasyProtobuf
         /// </summary>
         /// <param name="preprocessed"></param>
         /// <returns></returns>
-        public static byte[] ToByteArray(this EasyInputResult preprocessed)
+        public static byte[] ToByteArray(this EasyInputResult preprocessed, bool allowOutputTextBytes = false)
         {
             if (preprocessed.ProcessedString == null)
                 throw new ArgumentException("Using an instance that failed to process.", nameof(preprocessed));
@@ -95,7 +95,9 @@ namespace YYHEggEgg.EasyProtobuf
                 case EasyInputType.Hex:
                     return Convert.FromHexString(preprocessed.ProcessedString);
                 case EasyInputType.Json:
-                    throw new InvalidOperationException("Input requires bytes and JSON is not supposed to appear here.");
+                    if (!allowOutputTextBytes)
+                        throw new InvalidOperationException("Input requires bytes and JSON is not supposed to appear here.");
+                    return Encoding.UTF8.GetBytes(preprocessed.ProcessedString);
                 case EasyInputType.IdentifyFailure:
                     throw new ArgumentException("Can't identify the input type.", nameof(preprocessed));
                 default:

@@ -39,11 +39,11 @@ internal class Ec2bCmd : HasSubCommandsHandlerBase<Ec2bGetKeyOption, Ec2bEncrypt
 
     public override async Task HandleAsync(Ec2bGetKeyOption o)
     {
-        var read = EasyInput.TryPreProcess(o.Data ?? [], 1);
+        var read = EasyInput.TryPreProcess(o.Data ?? []);
         if (read.InputType != EasyInputType.Base64
             && read.InputType != EasyInputType.Hex)
         {
-            _logger.LogErro($"The input type isn't supported!");
+            _logger.LogErro($"The input type {read.InputType} isn't supported!");
             return;
         }
         var hexkey = Convert.ToHexString(Ec2b.Decrypt(read.ToByteArray()));

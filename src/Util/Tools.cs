@@ -462,7 +462,7 @@ internal static class Tools
         }
         return key;
     }
-    
+
     public static byte[] Generate4096KeyByMT19937_Sleep(ulong seed)
     {
         MT19937_64 mt2 = new(seed);
@@ -475,4 +475,29 @@ internal static class Tools
         return key;
     }
     #endregion
+
+    static readonly Newtonsoft.Json.JsonSerializer newtonSerializer = new();
+
+    public static string ConvertJsonString(string str)
+    {
+        TextReader tr = new StringReader(str);
+        JsonTextReader jtr = new(tr);
+        object? obj = newtonSerializer.Deserialize(jtr);
+        if (obj != null)
+        {
+            StringWriter textWriter = new();
+            JsonTextWriter jsonWriter = new(textWriter)
+            {
+                Formatting = Formatting.Indented,
+                Indentation = 2,
+                IndentChar = ' '
+            };
+            newtonSerializer.Serialize(jsonWriter, obj);
+            return textWriter.ToString();
+        }
+        else
+        {
+            return str;
+        }
+    }
 }
