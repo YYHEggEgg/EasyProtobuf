@@ -1,6 +1,5 @@
 using YYHEggEgg.EasyProtobuf.Commands;
 using YYHEggEgg.EasyProtobuf.Commands.AutoCompletion;
-using YYHEggEgg.EasyProtobuf.src.Commands.AutoCompletion;
 using YYHEggEgg.EasyProtobuf.Util;
 using YYHEggEgg.Logger;
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using YYHEggEgg.EasyProtobuf.Commands;
 using YYHEggEgg.Logger;
 
-namespace YYHEggEgg.EasyProtobuf.src.Commands.AutoCompletion;
+namespace YYHEggEgg.EasyProtobuf.Commands.AutoCompletion;
 
 internal class DispatchOptionsAutoCompleteHandler : IAutoCompleteHandler
 {
