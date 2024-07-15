@@ -3,13 +3,15 @@ using System.Text;
 using System.Security.Cryptography;
 using TextCopy;
 using XC.RSAUtil;
+using YYHEggEgg.Shell;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+#region Option Base
 internal class RsaKeyInputOptionBase
 {
-    [Value(0, Required = false, HelpText = "The path of input key file.")]
+    [Value(0, Required = false, MetaName = "input-key-filePath", HelpText = "The path of input key file.")]
     public string InputKeyFilePath { get; set; }
     [Option("cb-in", Required = false, Default = false, HelpText = "Get input from the clipboard.")]
     public bool ClipboardInput { get; set; }
@@ -33,50 +35,9 @@ internal class RsaKeyInputOptionBase
     }
 }
 
-[Verb("keyconv", false, HelpText = "Convert the provided RSA key (PEM or XML) into any supported format.")]
-internal class RsaKeyConvertOption : RsaKeyInputOptionBase
-{
-    [Option('o', "outkey", Required = true, HelpText = "The output key type you demand.")]
-    public IEnumerable<string> OutputKeyType { get; set; }
-    [Option('s', "save", Required = false, Default = null, HelpText = "The path you want to save the output key to.")]
-    public string? SaveTo { get; set; }
-}
-
-[Verb("get-keytype", false, HelpText = "Get the provided RSA key's format information.")]
-internal class RsaGetKeyTypeOption : RsaKeyInputOptionBase
-{
-}
-
-[Verb("keygen", false, HelpText = "Generate a RSA key.")]
-internal class RsaKeyGenOption
-{
-    [Value(0, Required = true)]
-    public IEnumerable<string> OutputKeyType { get; set; }
-    [Option("save-pub", Required = true)]
-    public string SavePublicTo { get; set; }
-    [Option("save-pri", Required = true)]
-    public string SavePrivateTo { get; set; }
-    [Option("keysize", Required = true)]
-    public int KeySize { get; set; }
-}
-
-internal class RsaOperationOptionBase
-{
-    [Value(0, Required = true, HelpText = "The data you want to operate on.")]
-    public IEnumerable<string> BinaryData { get; set; }
-    public byte[] Data => EasyInput.TryPreProcess(BinaryData).ToByteArray();
-
-    [Option('k', "key", Required = true, HelpText = "The path of input key file.")]
-    public string InputKeyFilePath { get; set; }
-    public RSAUtilBase GetRSAWorker()
-    {
-        return RSAUtilBase.LoadRSAKey(File.ReadAllBytes(InputKeyFilePath));
-    }
-}
-
 internal class RsaEncryptionOptionBase : RsaOperationOptionBase
 {
-    [Option("padding", Required = false, Default = "Pkcs1", HelpText = "The padding used in the RSA operation.")]
+    [Option("padding", Required = false, MetaValue = "enc-padding", Default = "Pkcs1", HelpText = "The padding used in the RSA operation.")]
     public string PaddingString { get; set; }
     public RSAEncryptionPadding Padding
     {
@@ -95,19 +56,9 @@ internal class RsaEncryptionOptionBase : RsaOperationOptionBase
     }
 }
 
-[Verb("encrypt", false, HelpText = "Encrypt the provided data with a Public Key.")]
-internal class RsaEncryptOption : RsaEncryptionOptionBase
-{
-}
-
-[Verb("decrypt", false, HelpText = "Decrypt the provided data with a Private Key.")]
-internal class RsaDecryptOption : RsaEncryptionOptionBase
-{
-}
-
 internal class RsaVerificationOptionBase : RsaOperationOptionBase
 {
-    [Option("padding", Required = false, Default = "Pkcs1", HelpText = "The padding used in the RSA operation.")]
+    [Option("padding", Required = false, MetaValue = "signing-padding", Default = "Pkcs1", HelpText = "The padding used in the RSA operation.")]
     public string PaddingString { get; set; }
     public RSASignaturePadding Padding
     {
@@ -122,7 +73,7 @@ internal class RsaVerificationOptionBase : RsaOperationOptionBase
         }
     }
 
-    [Option("hash", Required = false, Default = "SHA256", HelpText = "The hash algorithm used in generating the signature.")]
+    [Option("hash", Required = false, MetaValue = "hash-algorithm", Default = "SHA256", HelpText = "The hash algorithm used in generating the signature.")]
     public string HashAlgorithmString { get; set; }
     public HashAlgorithmName HashAlgorithm
     {
@@ -141,6 +92,58 @@ internal class RsaVerificationOptionBase : RsaOperationOptionBase
     }
 }
 
+internal class RsaOperationOptionBase
+{
+    [Value(0, Required = true, MetaName = "data", HelpText = "The data you want to operate on.")]
+    public IEnumerable<string> BinaryData { get; set; }
+    public byte[] Data => EasyInput.TryPreProcess(BinaryData).ToByteArray();
+
+    [Option('k', "key", Required = true, MetaValue = "input-key-filePath", HelpText = "The path of input key file.")]
+    public string InputKeyFilePath { get; set; }
+    public RSAUtilBase GetRSAWorker()
+    {
+        return RSAUtilBase.LoadRSAKey(File.ReadAllBytes(InputKeyFilePath));
+    }
+}
+#endregion
+
+[Verb("keyconv", false, HelpText = "Convert the provided RSA key (PEM or XML) into any supported format.")]
+internal class RsaKeyConvertOption : RsaKeyInputOptionBase
+{
+    [Option('o', "outkey", Required = true, MetaValue = "Key-Formats", HelpText = "The output key type you demand.")]
+    public IEnumerable<string> OutputKeyType { get; set; }
+    [Option('s', "save", Required = false, MetaValue = "save_path", Default = null, HelpText = "The path you want to save the output key to.")]
+    public string? SaveTo { get; set; }
+}
+
+[Verb("get-keytype", false, HelpText = "Get the provided RSA key's format information.")]
+internal class RsaGetKeyTypeOption : RsaKeyInputOptionBase
+{
+}
+
+[Verb("keygen", false, HelpText = "Generate a RSA key.")]
+internal class RsaKeyGenOption
+{
+    [Value(0, Required = true, MetaName = "Key-Formats")]
+    public IEnumerable<string> OutputKeyType { get; set; }
+    [Option("save-pub", MetaValue = "path", Required = true, HelpText = "The path to save the generated public key.")]
+    public string SavePublicTo { get; set; }
+    [Option("save-pri", MetaValue = "path", Required = true, HelpText = "The path to save the generated private key.")]
+    public string SavePrivateTo { get; set; }
+    [Option("keysize", MetaValue = "size_bits", Required = true, HelpText = "The key size of the generated key (e.g. 2048 (bits)).")]
+    public int KeySize { get; set; }
+}
+
+[Verb("encrypt", false, HelpText = "Encrypt the provided data with a Public Key.")]
+internal class RsaEncryptOption : RsaEncryptionOptionBase
+{
+}
+
+[Verb("decrypt", false, HelpText = "Decrypt the provided data with a Private Key.")]
+internal class RsaDecryptOption : RsaEncryptionOptionBase
+{
+}
+
 [Verb("sign", false, HelpText = "Generate the signature of provided data with a Private Key.")]
 internal class RsaSignOption : RsaVerificationOptionBase
 {
@@ -149,7 +152,7 @@ internal class RsaSignOption : RsaVerificationOptionBase
 [Verb("verify", false, HelpText = "Verify the provided data and signature with a Public Key.")]
 internal class RsaVerifyOption : RsaVerificationOptionBase
 {
-    [Option('s', "sign", Required = true, HelpText = "The signature of the provided RAW DATA.")]
+    [Option('s', "sign", MetaValue = "signature", Required = true, HelpText = "The signature of the provided RAW DATA.")]
     public IEnumerable<string> BinarySignature { get; set; }
     public byte[] Signature => EasyInput.TryPreProcess(BinarySignature).ToByteArray();
 }
@@ -161,56 +164,38 @@ internal partial class RsaCmd : HasSubCommandsHandlerBase<RsaEncryptOption, RsaD
 
     public override string Description => "Perform RSA related operations.";
 
-    public override string Usage => $"rsa [command] <args> {Environment.NewLine}" +
-    $"  command encrypt: Encrypt the provided data with a Public Key. {Environment.NewLine}" +
-    $"    rsa encrypt <raw_data>                      The data you want to encrypt. {Environment.NewLine}" +
-    $"                -k, --key <input-key-filePath>  The path of input key file. {Environment.NewLine}" +
-    $"                --padding [padding]             The padding used in the RSA operation.  {Environment.NewLine}" +
-    $"                                                (Default: Pkcs1) {Environment.NewLine}" +
-    $"                                                (Avaliable: Pkcs1/OaepSHA1/OaepSHA256/OaepSHA284/OaepSHA512) {Environment.NewLine}" +
-    $" {Environment.NewLine}" +
-    $"  command decrypt: Decrypt the provided data with a Private Key. {Environment.NewLine}" +
-    $"    rsa decrypt <enc_data>                      The data you want to decrypt. {Environment.NewLine}" +
-    $"                -k, --key <input-key-filePath>  The path of input key file. {Environment.NewLine}" +
-    $"                --padding [padding]             The padding used in the RSA operation. {Environment.NewLine}" +
-    $"                                                (Default: Pkcs1) {Environment.NewLine}" +
-    $"                                                (Avaliable: Pkcs1/OaepSHA1/OaepSHA256/OaepSHA284/OaepSHA512) {Environment.NewLine}" +
-    $" {Environment.NewLine}" +
-    $"  command sign: Generate the signature of provided data with a Private Key. {Environment.NewLine}" +
-    $"    rsa sign <raw_data>                      The data you want to sign. {Environment.NewLine}" +
-    $"             -k, --key <input-key-filePath>  The path of input key file. {Environment.NewLine}" +
-    $"             --hash [hash-algorithm]         The hash algorithm used in generating the signature. {Environment.NewLine}" +
-    $"                                             (Default: SHA256) {Environment.NewLine}" +
-    $"                                             (Avaliable: SHA256/MD5/SHA1/SHA384/SHA512) {Environment.NewLine}" +
-    $"             --padding [padding]             The padding used in the RSA operation. {Environment.NewLine}" +
-    $"                                             (Default: Pkcs1) {Environment.NewLine}" +
-    $"                                             (Avaliable: Pkcs1/Pss) {Environment.NewLine}" +
-    $" {Environment.NewLine}" +
-    $"  command verify: Verify the provided data and signature with a Public Key. {Environment.NewLine}" +
-    $"    rsa verify <raw_data>                      The RAW DATA you want to verify. {Environment.NewLine}" +
-    $"               -k, --key <input-key-filePath>  The path of input key file. {Environment.NewLine}" +
-    $"               -s, --sign <signature>          The signature of the provided RAW DATA. {Environment.NewLine}" +
-    $"               --hash [hash-algorithm]         The hash algorithm used in generating the signature. {Environment.NewLine}" +
-    $"                                               (Default: SHA256) {Environment.NewLine}" +
-    $"                                               (Avaliable: SHA256/MD5/SHA1/SHA384/SHA512) {Environment.NewLine}" +
-    $"               --padding [padding]             The padding used in the RSA operation.  {Environment.NewLine}" +
-    $"                                               (Default: Pkcs1)  {Environment.NewLine}" +
-    $"                                               (Avaliable: Pkcs1/Pss) {Environment.NewLine}" +
-    $" {Environment.NewLine}" +
-    $"  command get-keytype: Get the provided RSA key's format information. {Environment.NewLine}" +
-    $"    rsa get-keytype <input-key-filePath>  The path of input key file. {Environment.NewLine}" +
-    $"                    (or --cb-in:          Get input from the clipboard.) {Environment.NewLine}" +
-    $" {Environment.NewLine}" +
-    $"  command keygen: Generate a RSA key of the specified type and size. {Environment.NewLine}" +
-    $"    rsa keygen  [Key-Formats]               The output key type you demand. {Environment.NewLine}" +
-    $"                                            (Avaliable: Public, Private, Xml, Pkcs1, Pkcs8, Der) {Environment.NewLine}" +
-    $"                --save-pri/-pub <path>      The path to save the generated public & private key. {Environment.NewLine}" +
-    $"                --keysize <size_bits>       The key size of the generated key (e.g. 2048 (bits)). {Environment.NewLine}" +
-    $" {Environment.NewLine}" +
-    $"  command keyconv: Convert the provided RSA key (PEM or XML) into any supported format. {Environment.NewLine}" +
-    $"    rsa keyconv <input-key-filePath>        The path of input key file. {Environment.NewLine}" +
-    $"                (or --cb-in:                Get input from the clipboard.) {Environment.NewLine}" +
-    $"                -o, --outkey [Key-Formats]  The output key type you demand. {Environment.NewLine}" +
-    $"                                            (Avaliable: Public, Private, Xml, Pkcs1, Pkcs8, Der) {Environment.NewLine}" +
-    $"                -s, --save <save_path>      The path to save the converted key.";
+    protected override OptionHelpResult? CustomizeOptionHelpResult(OptionHelpResult help)
+    {
+        switch (help.MetaName)
+        {
+            case "enc-padding":
+                help.AdditionalHelps =
+                    [
+                        "(Default: Pkcs1)",
+                        "(Available: Pkcs1/OaepSHA1/OaepSHA256/OaepSHA284/OaepSHA512)",
+                    ];
+                break;
+            case "signing-padding":
+                help.AdditionalHelps =
+                    [
+                        "(Default: Pkcs1)",
+                        "(Available: Pkcs1/Pss)",
+                    ];
+                break;
+            case "hash-algorithm":
+                help.AdditionalHelps =
+                    [
+                        "(Default: SHA256)",
+                        "(Available: SHA256/MD5/SHA1/SHA384/SHA512)",
+                    ];
+                break;
+            case "Key-Formats":
+                help.AdditionalHelps =
+                    [
+                        "(Available: Public, Private, Xml, Pkcs1, Pkcs8, Der)",
+                    ];
+                break;
+        }
+        return help;
+    }
 }

@@ -4,7 +4,8 @@ using System.Security.Cryptography;
 using YYHEggEgg.EasyProtobuf.Util;
 using YSFreedom.Common.Util;
 using CommandLine;
-using YYHEggEgg.Logger;
+using YYHEggEgg.Shell;
+using Microsoft.Extensions.Logging;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
@@ -18,17 +19,17 @@ internal class MT19937GenKeyOptionBase
     [Option("💤", Default = false, Required = false)]
     public bool UseSleeeepImpl { get; set; }
 
-    public virtual bool ReportAvaliableOption(LoggerChannel log)
+    public virtual bool ReportAvaliableOption(ILogger log)
     {
         UseSleepImpl |= UseSleeeepImpl;
         if (UseAnimeImpl && UseSleepImpl)
         {
-            log.LogErro($"Please specify only one MT implemention in '--anime' or '--sleep'!");
+            log.LogError($"Please specify only one MT implemention in '--anime' or '--sleep'!");
             return false;
         }
         if (!UseAnimeImpl && !UseSleepImpl)
         {
-            log.LogErro($"Please specify an MT implemention in '--anime' or '--sleep'!");
+            log.LogError($"Please specify an MT implemention in '--anime' or '--sleep'!");
             return false;
         }
         return true;
@@ -38,18 +39,18 @@ internal class MT19937GenKeyOptionBase
 [Verb("from-seed", false, HelpText = "Generate a 4096-bytes XOR Key from given final seed directly (result of clientRandKey xor serverRandKey).")]
 internal class MT19937DirectGenOption : MT19937GenKeyOptionBase
 {
-    [Value(0, Required = true, HelpText = "The Input UInt64 / HEX Seed.")]
+    [Value(0, Required = true, MetaName = "uint64_seed|uint64_seed_HEX", HelpText = "The Input UInt64 / HEX Seed.")]
     public string InputSeed { get; set; }
 }
 
 [Verb("rsa", true, HelpText = "Generate a 4096-bytes XOR Key from RSA Encrypted clientRandKey and serverRandKey.")]
 internal class MT19937FromRSAOption : MT19937GenKeyOptionBase
 {
-    [Value(0, Required = true, HelpText = "RSA Encrypted ClientRandKey Base64/HEX.")]
+    [Value(0, Required = true, MetaName = "RSA_Encrypted_clientRandKey_base64/hex", HelpText = "RSA Encrypted ClientRandKey Base64/HEX.")]
     public string ClientRandKey { get; set; }
-    [Value(1, Required = true, HelpText = "RSA Encrypted ServerRandKey Base64/HEX.")]
+    [Value(1, Required = true, MetaName = "RSA_Encrypted_serverRandKey_base64/hex", HelpText = "RSA Encrypted ServerRandKey Base64/HEX.")]
     public string ServerRandKey { get; set; }
-    [Option('k', "key", Required = true, HelpText = "The id of the RSA Key Pair you want to use.")]
+    [Option('k', "key", Required = true, MetaValue = "rsa_key_id", HelpText = "The id of the RSA Key Pair you want to use.")]
     public uint KeyId { get; set; }
 }
 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
@@ -61,17 +62,27 @@ internal class MT19937Cmd : HasSubCommandsHandlerBase<MT19937DirectGenOption, MT
     public override string Description => "Generate 4096-byte XOR key with a certain UInt64 seed, " +
         "or with RSA param clientRandkey and serverRandKey.";
 
-    public override string Usage => $"mt19937 [command] <args>{Environment.NewLine}" +
-        $"  command rsa (default): Generate a 4096-bytes XOR Key from RSA Encrypted clientRandKey and serverRandKey.{Environment.NewLine}" +
-        $"    mt19937 <--anime|--sleep> {Environment.NewLine}" +
-        $"            -k, --key <rsa_key_id> {Environment.NewLine}" +
-        $"            <RSA_Encrypted_clientRandKey_base64/hex> <RSA_Encrypted_serverRandKey_base64/hex> {Environment.NewLine}" +
-        $"{Environment.NewLine}" +
-        $"  command from-seed: Generate a 4096-bytes XOR Key from given final seed directly (result of clientRandKey xor serverRandKey).{Environment.NewLine}" +
-        $"    mt19937 from-seed <--anime|--sleep> {Environment.NewLine}" +
-        $"                      <uint64_seed|uint64_seed_HEX> {Environment.NewLine}" +
-        $"{Environment.NewLine}" +
-        $"Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>";
+    protected override OptionHelpResult? CustomizeOptionHelpResult(OptionHelpResult help)
+    {
+        switch (help.OptionString)
+        {
+            case "--anime":
+                help.IsRequired = true;
+                help.OptionString = null;
+                help.MetaName = "--anime|--sleep";
+                break;
+            case "--sleep":
+            case "--💤":
+                help.ReplaceWith = [];
+                break;
+        }
+        return help;
+    }
+
+    protected override IEnumerable<string>? AdditionalDescLines =>
+        [
+            "Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>"
+        ];
 
     public override Task HandleAsync(MT19937FromRSAOption o)
     {
@@ -115,17 +126,11 @@ internal class MT19937Cmd : HasSubCommandsHandlerBase<MT19937DirectGenOption, MT
     {
         if (!mode.ReportAvaliableOption(_logger)) return;
 
-        if (mode.UseAnimeImpl)
-        {
-            _logger.LogInfo($"MT64 result:{Environment.NewLine}-----BEGIN HEX 4096 Xor Key-----{Environment.NewLine}" +
-                Convert.ToHexString(Tools.Generate4096KeyByMT19937_Anime(seed)) +
-                $"{Environment.NewLine}-----END HEX 4096 Xor Key-----");
-        }
-        else
-        {
-            _logger.LogInfo($"MT64 result:{Environment.NewLine}-----BEGIN HEX 4096 Xor Key-----{Environment.NewLine}" +
-                Convert.ToHexString(Tools.Generate4096KeyByMT19937_Sleep(seed)) +
-                $"{Environment.NewLine}-----END HEX 4096 Xor Key-----");
-        }
+        var key = mode.UseAnimeImpl ? Tools.Generate4096KeyByMT19937_Anime(seed) : Tools.Generate4096KeyByMT19937_Sleep(seed);
+        _logger.LogInformation("MT64 result:\n" +
+            "-----BEGIN HEX 4096 Xor Key-----\n" +
+            "{key}\n" +
+            "-----END HEX 4096 Xor Key-----",
+            Convert.ToHexString(key));
     }
 }

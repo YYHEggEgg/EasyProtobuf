@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System.Text;
 using XC.RSAUtil;
 using YYHEggEgg.EasyProtobuf.Util;
@@ -6,7 +7,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    private RsaKeyFeature? ParseKeyTypeStrings(IEnumerable<string> keyTypeStrings)
+    private RsaKeyFeature? ParseKeyTypeStrings(IEnumerable<string> keyTypeStrings, bool optionalIsPrivate = false)
     {
         var outputKeyType = new RsaKeyFeature();
         bool? recordIsPrivate = null;
@@ -16,7 +17,7 @@ internal partial class RsaCmd
             {
                 if (recordIsPrivate != null)
                 {
-                    _logger.LogErro("Please specify Private or Public only once!");
+                    _logger.LogError("Please specify Private or Public only once!");
                     return null;
                 }
                 recordIsPrivate = opt == "Private";
@@ -27,7 +28,7 @@ internal partial class RsaCmd
             {
                 if (outputKeyType.Padding != RsaKeyPadding.Invalid)
                 {
-                    _logger.LogErro("Please specify key padding (Xml, Pkcs1, Pkcs8, Der) only once!");
+                    _logger.LogError("Please specify key padding (Xml, Pkcs1, Pkcs8, Der) only once!");
                     return null;
                 }
                 outputKeyType.Padding = padding;
@@ -36,7 +37,7 @@ internal partial class RsaCmd
             {
                 if (outputKeyType.Format != RsaKeyFormat.Invalid)
                 {
-                    _logger.LogErro("Please specify key format (Xml, Pem, Der) only once!");
+                    _logger.LogError("Please specify key format (Xml, Pem, Der) only once!");
                     return null;
                 }
                 outputKeyType.Format = format;
@@ -47,10 +48,15 @@ internal partial class RsaCmd
             outputKeyType.Format = RsaKeyFormat.Pem;
         if (recordIsPrivate == null)
         {
-            _logger.LogErro("Please specify whether to generate Public or Private key!");
-            return null;
+            if (optionalIsPrivate)
+                outputKeyType.IsPrivate = false;
+            else
+            {
+                _logger.LogError("Please specify whether to generate Public or Private key!");
+                return null;
+            }
         }
-        outputKeyType.IsPrivate = recordIsPrivate.Value;
+        else outputKeyType.IsPrivate = recordIsPrivate.Value;
 
         return outputKeyType;
     }
@@ -63,23 +69,25 @@ internal partial class RsaCmd
         var outputKeyType = ParseKeyTypeStrings(o.OutputKeyType);
         if (outputKeyType == null) return;
 
-        _logger.LogInfo($"Input key type: Format: {inputKeyType.Format}, Padding: {inputKeyType.Padding}, IsPrivate: {inputKeyType.IsPrivate}");
-        _logger.LogInfo($"Output key type: Format: {outputKeyType.Format}, Padding: {outputKeyType.Padding}, IsPrivate: {outputKeyType.IsPrivate}");
+        _logger.LogInformation("Input key type: Format: {}, Padding: {}, IsPrivate: {}", inputKeyType.Format, inputKeyType.Padding, inputKeyType.IsPrivate);
+        _logger.LogInformation("Output key type: Format: {}, Padding: {}, IsPrivate: {}", outputKeyType.Format, outputKeyType.Padding, outputKeyType.IsPrivate);
 
         var res = RsaKeyConvert.Format(keyBin, inputKeyType, outputKeyType);
         if (o.SaveTo != null)
         {
             var savePath = Path.GetFullPath(o.SaveTo);
             File.WriteAllBytes(savePath, res);
-            _logger.LogInfo($"Key saved to path: '{savePath}'.");
+            _logger.LogInformation("Key saved to path: '{path}'.", savePath);
         }
         else
         {
-            _logger.LogVerb(outputKeyType.Format.ToString());
+            _logger.LogTrace("{format}", outputKeyType.Format.ToString());
             if (outputKeyType.Format == RsaKeyFormat.Der)
-                _logger.LogWarn($"The output key is in a binary format; it may not be able to display correctly. You may need to specify '-s, --save' option and try again.");
+                _logger.LogWarning("The output key is in a binary format; " +
+                    "it may not be able to display correctly. " +
+                    "You may need to specify '-s, --save' option and try again.");
             Tools.SetClipBoard(Encoding.UTF8.GetString(res));
-            _logger.LogInfo($"Key output to clipboard.");
+            _logger.LogInformation("Key output to clipboard.");
         }
     }
 }

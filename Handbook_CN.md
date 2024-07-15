@@ -147,6 +147,7 @@ gencur 4 { "retcode": 1, "msg": "Not Found version config" }
 
 ```sh
 convert <base64_data/hex_data>
+  [-t, --target <Base64|Hex|Json>]
 ```
 
 ### 示例

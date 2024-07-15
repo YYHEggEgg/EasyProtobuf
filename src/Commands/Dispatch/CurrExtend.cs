@@ -1,16 +1,20 @@
 using Google.Protobuf;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using XC.RSAUtil;
+using YYHEggEgg.EasyProtobuf.MainCLI;
+using YYHEggEgg.EasyProtobuf.Util;
 
 namespace YYHEggEgg.EasyProtobuf.Commands.Dispatch
 {
     public class CurrExtend
     {
         public static (IMessage? res, bool? verificationOK)
-            GetCurrFromJson(string protoname, string? json, RSAUtilBase CPri, RSAUtilBase SPub)
+            GetCurrFromJson(string protoname, string? json, RSAUtilBase CPri, RSAUtilBase SPub,
+            ILogger warnLogger)
         {
             if (json == null) return (null, null);
             var doc = JsonDocument.Parse(json).RootElement;
@@ -26,8 +30,20 @@ namespace YYHEggEgg.EasyProtobuf.Commands.Dispatch
                 return (null, null);
             byte[] data = Convert.FromBase64String(content);
             byte[] res = CPri.RsaDecrypt(data, RSAEncryptionPadding.Pkcs1);
-            return (EasyProtobufProgram.Deserialize(protoname, res),
-                    SPub.VerifyData(res, Convert.FromBase64String(sign),
+
+            var msg = ProtobufHandler.Deserialize(protoname, res);
+            if (msg != null)
+            {
+                var unksize = Tools.GetUnknownFieldsSize(msg, ProtobufHandler.FindProtoMessageType(protoname));
+                if (unksize != 0)
+                {
+                    warnLogger.LogWarning("Message has unknown fields that aren't defined " +
+                        "in your proto: {unkSize}/{totalSize} bytes. " +
+                        "Please go to protobuf decode-raw tools for more information.",
+                        unksize, msg.CalculateSize());
+                }
+            }
+            return (msg, SPub.VerifyData(res, Convert.FromBase64String(sign),
                         HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1));
         }
 

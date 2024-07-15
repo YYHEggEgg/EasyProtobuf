@@ -147,6 +147,7 @@ The `convert` command can convert the input content between base64 and HEX (hexa
 
 ```sh
 convert <base64_data/hex_data>
+  [-t, --target <Base64|Hex|Json>]
 ```
 
 ### Example

@@ -5,6 +5,9 @@ using Newtonsoft.Json;
 using YYHEggEgg.EasyProtobuf.Util;
 using YYHEggEgg.EasyProtobuf.Configuration;
 using YYHEggEgg.Logger;
+using YYHEggEgg.Shell;
+using Microsoft.Extensions.Logging;
+using YYHEggEgg.EasyProtobuf.MainCLI;
 
 namespace YYHEggEgg.EasyProtobuf.Commands
 {
@@ -14,17 +17,20 @@ namespace YYHEggEgg.EasyProtobuf.Commands
 
         public override string Description => "Decrypt query_cur_region content and verify it (to ensure it avaliable in anime game).";
 
-        public override string Usage => $"dcurr <key_id> <curr_json>{Environment.NewLine}" +
-            $"Decrypt and verify query_cur_region content, by the key from resources. {Environment.NewLine}" +
-            $"{Environment.NewLine}" +
-            $"Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines (especially json data).</color>";
+        public override IEnumerable<string> UsageLines =>
+            [
+                $"dcurr <key_id> <curr_json>",
+                $"Decrypt and verify query_cur_region content, by the key from resources.",
+                "",
+                "Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines (especially json data).</color>"
+            ];
 
         public override async Task HandleAsync(string argList)
         {
             var conf = Config.Global.CurrRegionCmds;
             if (conf.UseProtoCurr && conf.BasedProto == null)
             {
-                _logger.LogErro($"This command cannot be used because 'config.json/CurrRegionCmd/BasedProto' is not configured yet.");
+                _logger.LogError($"This command cannot be used because 'config.json/CurrRegionCmd/BasedProto' is not configured yet.");
                 return;
             }
 
@@ -33,7 +39,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             var read = EasyInput.TryPreProcess(args, 1);
             if (read.InputType != EasyInputType.Json)
             {
-                _logger.LogErro($"Input param 2 should be a valid json!");
+                _logger.LogError($"Input param 2 should be a valid json!");
             }
             string? res = null;
             bool? verificationOK;
@@ -43,7 +49,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                 {
 #pragma warning disable CS8604 // Checked: L24 conf.UseProtoCurr && conf.BasedProto == null -> return
                     (IMessage? currres, verificationOK) = CurrExtend.GetCurrFromJson(conf.BasedProto, read.ProcessedString,
-                        Resources.CPri[key_id], Resources.OfficialSPub[key_id]);
+                        Resources.CPri[key_id], Resources.OfficialSPub[key_id], _logger);
 #pragma warning restore CS8604
                     res = JsonFormatter.Default.Format(currres);
                 }
@@ -55,33 +61,33 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             }
             catch (JsonReaderException jex)
             {
-                _logger.LogErro($"Decryption failed: {jex}");
-                _logger.LogWarn($"It may because you provided a bad-formatted json.");
+                _logger.LogError(jex, $"Decryption failed.");
+                _logger.LogWarning($"It may because you provided a bad-formatted json.");
                 return;
             }
             catch (KeyNotFoundException kex)
             {
-                _logger.LogErro($"Decryption failed: {kex}");
-                _logger.LogWarn($"It may because you requested keys that haven't been placed in resources.");
+                _logger.LogError(kex, $"Decryption failed.");
+                _logger.LogWarning($"It may because you requested keys that haven't been placed in resources.");
                 return;
             }
             catch (Exception ex)
             {
-                _logger.LogErroTrace(ex, $"Decryption failed.");
-                _logger.LogWarn($"It may because the RSA key doesn't match " +
+                _logger.LogError(ex, $"Decryption failed.");
+                _logger.LogWarning($"It may because the RSA key doesn't match " +
                     $"or you provided false query_cur_region json.");
                 return;
             }
             
             if (string.IsNullOrWhiteSpace(res)) res = "<empty content or json/protobuf format failure>";
-            _logger.LogInfo($"Decrypted json content: \n{res}");
+            _logger.LogInformation("Decrypted json content: \n{res}", res);
             if (verificationOK == true)
             {
-                _logger.LogInfo($"Sign Verified OK!");
+                _logger.LogInformation($"Sign Verified OK!");
             }
             else if (verificationOK == false)
             {
-                _logger.LogWarn($"RSA Verification failed. " +
+                _logger.LogWarning($"RSA Verification failed. " +
                     $"You may check whether a correct RSA key is configured.");
             }
             await Tools.SetClipBoardAsync(res);
@@ -100,15 +106,18 @@ namespace YYHEggEgg.EasyProtobuf.Commands
 
         public override string Description => "Generate query_cur_region content and signature.";
 
-        public override string Usage => $"gencur <key_id> <protobuf_content>{Environment.NewLine}" +
-            $"Encrypt and sign query_cur_region content, by the key from resources.";
+        public override IEnumerable<string> UsageLines =>
+            [
+                "gencur <key_id> <protobuf_content>",
+                "Encrypt and sign query_cur_region content, by the key from resources.",
+            ];
 
         public override async Task HandleAsync(string argList)
         {
             var conf = Config.Global.CurrRegionCmds;
             if (conf.UseProtoCurr && conf.BasedProto == null)
             {
-                _logger.LogErro($"This command cannot be used because 'config.json/CurrRegionCmd/BasedProto' is not configured yet.");
+                _logger.LogError($"This command cannot be used because 'config.json/CurrRegionCmd/BasedProto' is not configured yet.");
                 return;
             }
 
@@ -117,7 +126,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             var read = EasyInput.TryPreProcess(args, 1);
             if (read.InputType != EasyInputType.Json)
             {
-                _logger.LogErro($"Input param 2 should be a valid json!");
+                _logger.LogError($"Input param 2 should be a valid json!");
             }
             string? res = null;
             try
@@ -125,7 +134,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                 if (conf.UseProtoCurr)
                 {
 #pragma warning disable CS8604 // Checked: L102 conf.UseProtoCurr && conf.BasedProto == null -> return
-                    res = EasyProtobufProgram.Serialize(conf.BasedProto, read.ProcessedString ?? string.Empty)
+                    res = ProtobufHandler.Serialize(conf.BasedProto, read.ProcessedString ?? string.Empty)
                         ?.GetCurrJson(Resources.CPri[key_id], Resources.LocalSPri[key_id]);
 #pragma warning restore CS8604
                 }
@@ -136,40 +145,39 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             }
             catch (JsonReaderException jex)
             {
-                _logger.LogErro($"Encryption failed: {jex}");
-                _logger.LogWarn($"It may because you provided a bad-formatted json.");
+                _logger.LogError(jex, "Encryption failed.");
+                _logger.LogWarning($"It may because you provided a bad-formatted json.");
                 return;
             }
             catch (KeyNotFoundException kex)
             {
-                _logger.LogErro($"Encryption failed: {kex}");
-                _logger.LogWarn($"It may because you requested keys that haven't been placed in resources.");
+                _logger.LogError(kex, $"Encryption failed.");
+                _logger.LogWarning($"It may because you requested keys that haven't been placed in resources.");
                 return;
             }
             catch (Exception ex)
             {
-                _logger.LogErroTrace(ex, 
-                    $"Protobuf serialization / JSON read failed.");
-                _logger.LogWarn($"It may because the json isn't valid." +
+                _logger.LogError(ex, $"Protobuf serialization / JSON read failed.");
+                _logger.LogWarning($"It may because the json isn't valid." +
                     $"It's recommended to modify based on the result" +
                     $"from json protobuf from 'util dcurr' command.");
                 return;
             }
             if (res == null)
             {
-                _logger.LogErro($"Protobuf serialization / JSON read failed (no exceptions thrown).");
+                _logger.LogError($"Protobuf serialization / JSON read failed (no exceptions thrown).");
                 return;
             }
 
             try
             {
-                _logger.LogInfo($"Result: \n{res}");
+                _logger.LogInformation("Result: \n{res}", res);
                 await Tools.SetClipBoardAsync(res);
             }
             catch (Exception ex)
             {
-                _logger.LogErroTrace(ex, $"RSA encryption failed.");
-                _logger.LogWarn($"It may because you don't provide match key" +
+                _logger.LogError(ex, $"RSA encryption failed.");
+                _logger.LogWarning($"It may because you don't provide match key" +
                     $"in resources/ClientPri and resources/ServerPri.");
                 return;
             }

@@ -1,5 +1,7 @@
 using CommandLine;
+using Microsoft.Extensions.Logging;
 using YYHEggEgg.EasyProtobuf.Util;
+using YYHEggEgg.Shell;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
@@ -7,20 +9,20 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 [Verb("set-key", false, HelpText = "Set the default key for XOR operations.")]
 internal class XorSetDefaultKeyOption
 {
-    [Value(0, Required = true, HelpText = "The demanded default key for XOR command.")]
+    [Value(0, Required = true, MetaName = "xorkey", HelpText = "The demanded default key for XOR command.")]
     public IEnumerable<string> Key { get; set; }
 }
 
 [Verb("operate", true, HelpText = "Do a XOR operation.")]
 internal class XorOperateOption
 {
-    [Option('k', "xorkey", Required = false, Default = null, HelpText = "Set the default key for XOR command.")]
+    [Option('k', "xorkey", MetaValue = "bin", Required = false, Default = null, HelpText = "Set the default key for XOR command.")]
     public IEnumerable<string>? Key { get; set; }
-    [Value(0, Required = true, HelpText = "The value to be XOR decrypted.")]
+    [Value(0, Required = true, MetaName = "value", HelpText = "The HEX / Base64 Content that should be decrypted.")]
     public IEnumerable<string> Value { get; set; }
-    [Option("validate-startswith", Required = false, Default = null, HelpText = "Validate the result starts with a certain pattern.")]
+    [Option("validate-startswith", MetaValue = "bin", Required = false, Default = null, HelpText = "Validate the result starts with a certain pattern.")]
     public IEnumerable<string>? ValidateStartsWith { get; set; }
-    [Option("validate-endswith", Required = false, Default = null, HelpText = "Validate the result ends with a certain pattern.")]
+    [Option("validate-endswith", MetaValue = "bin", Required = false, Default = null, HelpText = "Validate the result ends with a certain pattern.")]
     public IEnumerable<string>? ValidateEndsWith { get; set; }
 }
 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
@@ -31,28 +33,20 @@ internal class XorCmd : HasSubCommandsHandlerBase<XorOperateOption, XorSetDefaul
 
     public override string Description => "Perform the XOR decryption and analyze the result.";
 
-    public override string Usage => $"xor [command] <args> {Environment.NewLine}" +
-        $"  command 'operate' (default): Do a XOR operation. {Environment.NewLine}" +
-        $"    xor <value>                      The HEX / Base64 Content that should be decrypted. {Environment.NewLine}" +
-        $"        -k, --xorkey                 Set the default key for XOR command. {Environment.NewLine}" +
-        $"        --validate-startswith <bin>  Validate the result starts with a certain pattern. {Environment.NewLine}" +
-        $"        --validate-endswith <bin>    Validate the result ends with a certain pattern. {Environment.NewLine}" +
-        $" {Environment.NewLine}" +
-        $"  command 'set-key': Set the default key for XOR operations. {Environment.NewLine}" +
-        $"    xor set-key {Environment.NewLine}" +
-        $"        <xorkey>                     The demanded default key for XOR command. {Environment.NewLine}" +
-        $" {Environment.NewLine}" +
-        EasyInput.MultipleInputNotice +
-        $" {Environment.NewLine}" +
-        $" {Environment.NewLine}" +
-        $"Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>";
+    protected override IEnumerable<string>? AdditionalDescLines =>
+        [
+            EasyInput.MultipleInputNotice,
+            "",
+            "",
+            "Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>"
+        ];
 
     private byte[]? default_key = null;
 
     public override Task HandleAsync(XorSetDefaultKeyOption opt)
     {
         default_key = EasyInput.TryPreProcess(opt.Key).ToByteArray();
-        _logger.LogInfo($"Successfully set default key: {default_key.Length} bytes.");
+        _logger.LogInformation("Successfully set default key: {length} bytes.", default_key.Length);
         return Task.CompletedTask;
     }
 
@@ -62,21 +56,21 @@ internal class XorCmd : HasSubCommandsHandlerBase<XorOperateOption, XorSetDefaul
         if (opt.Key != null && opt.Key.Any()) key = EasyInput.TryPreProcess(opt.Key).ToByteArray();
         if (key == null)
         {
-            _logger.LogErro($"Please give the using XOR key by '-k' option, or set the default key with 'xor set-key' command.");
+            _logger.LogError("Please give the using XOR key by '-k' option, or set the default key with 'xor set-key' command.");
             return;
         }
 
         var value = EasyInput.TryPreProcess(opt.Value).ToByteArray();
         XorDecrypt(value, key);
         await Tools.SetClipBoardAsync(Convert.ToHexString(value));
-        _logger.LogInfo($"Successfully decrypted data, input: {value.Length} bytes, key: {key.Length} bytes.");
+        _logger.LogInformation("Successfully decrypted data, input: {length} bytes, key: {length} bytes.", value.Length, key.Length);
         
         if (opt.ValidateStartsWith != null && opt.ValidateStartsWith.Any())
         {
             var assert = EasyInput.TryPreProcess(opt.ValidateStartsWith).ToByteArray();
             if (assert.Length > value.Length)
             {
-                _logger.LogErro($"Validate StartsWith error: The required pattern is longer than the value itself.");
+                _logger.LogError($"Validate StartsWith error: The required pattern is longer than the value itself.");
             }
             else
             {
@@ -92,11 +86,11 @@ internal class XorCmd : HasSubCommandsHandlerBase<XorOperateOption, XorSetDefaul
 
                 if (res)
                 {
-                    _logger.LogInfo($"Validate StartsWith OK: Decrypted value starts with the provided pattern.");
+                    _logger.LogInformation($"Validate StartsWith OK: Decrypted value starts with the provided pattern.");
                 }
                 else
                 {
-                    _logger.LogWarn($"Validate StartsWith failed: Decrypted value's start mismatches the provided pattern.");
+                    _logger.LogWarning($"Validate StartsWith failed: Decrypted value's start mismatches the provided pattern.");
                 }
             }
         }
@@ -105,7 +99,7 @@ internal class XorCmd : HasSubCommandsHandlerBase<XorOperateOption, XorSetDefaul
             var assert = EasyInput.TryPreProcess(opt.ValidateEndsWith).ToByteArray();
             if (assert.Length > value.Length)
             {
-                _logger.LogErro($"Validate EndsWith error: The required pattern is longer than the value itself.");
+                _logger.LogError($"Validate EndsWith error: The required pattern is longer than the value itself.");
             }
             else
             {
@@ -122,11 +116,11 @@ internal class XorCmd : HasSubCommandsHandlerBase<XorOperateOption, XorSetDefaul
 
                 if (res)
                 {
-                    _logger.LogInfo($"Validate EndsWith OK: Decrypted value ends with the provided pattern.");
+                    _logger.LogInformation($"Validate EndsWith OK: Decrypted value ends with the provided pattern.");
                 }
                 else
                 {
-                    _logger.LogWarn($"Validate EndsWith failed: Decrypted value's end mismatches the provided pattern.");
+                    _logger.LogWarning($"Validate EndsWith failed: Decrypted value's end mismatches the provided pattern.");
                 }
             }
         }

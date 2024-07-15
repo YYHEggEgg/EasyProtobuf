@@ -1,20 +1,22 @@
 ﻿using AssetLib.Formats;
 using CommandLine;
+using Microsoft.Extensions.Logging;
 using YYHEggEgg.EasyProtobuf.Util;
+using YYHEggEgg.Shell;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
 [Verb("get_key", true)]
 internal class Ec2bGetKeyOption
 {
-    [Value(0, Required = true)]
+    [Value(0, Required = true, MetaName = "content_bindata(base64/hex)")]
     public IEnumerable<string>? Data { get; set; }
 }
 
 [Verb("encrypt", false)]
 internal class Ec2bEncryptOption
 {
-    [Value(0, Required = true)]
+    [Value(0, Required = true, MetaName = "uint64_t_seed")]
     public ulong KeySeed { get; set; }
 }
 
@@ -24,18 +26,20 @@ internal class Ec2bCmd : HasSubCommandsHandlerBase<Ec2bGetKeyOption, Ec2bEncrypt
 
     public override string Description => "Make operations on dispatch secret_key/secret_seed.";
 
-    public override string Usage => $"ec2b get_key <content_bindata(base64/hex)>{Environment.NewLine}" +
-        EasyInput.MultipleInputNotice +
-        $"{Environment.NewLine}" +
-        $"{Environment.NewLine}" +
-        $"Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>{Environment.NewLine}" +
-        $"{Environment.NewLine}" +
-        $"ec2b encrypt <uint64_t_seed>";
-
     public override void CleanUp()
     {
         throw new NotImplementedException();
     }
+
+    protected override Dictionary<string, IEnumerable<string>>? SubcommandAdditionalDescLinesMap => new()
+    {
+        ["get_key"] =
+            [
+                EasyInput.MultipleInputNotice,
+                string.Empty,
+                "Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>",
+            ],
+    };
 
     public override async Task HandleAsync(Ec2bGetKeyOption o)
     {
@@ -43,18 +47,18 @@ internal class Ec2bCmd : HasSubCommandsHandlerBase<Ec2bGetKeyOption, Ec2bEncrypt
         if (read.InputType != EasyInputType.Base64
             && read.InputType != EasyInputType.Hex)
         {
-            _logger.LogErro($"The input type {read.InputType} isn't supported!");
+            _logger.LogError("The input type {type} isn't supported!", read.InputType);
             return;
         }
         var hexkey = Convert.ToHexString(Ec2b.Decrypt(read.ToByteArray()));
-        _logger.LogInfo(hexkey);
+        _logger.LogInformation("{bin}", hexkey);
         await Tools.SetClipBoardAsync(hexkey);
     }
 
     public override async Task HandleAsync(Ec2bEncryptOption o)
     {
         var hexseed = Convert.ToHexString(Ec2b.Encrypt(o.KeySeed));
-        _logger.LogInfo(hexseed);
+        _logger.LogInformation("{bin}", hexseed);
         await Tools.SetClipBoardAsync(hexseed);
     }
 }
