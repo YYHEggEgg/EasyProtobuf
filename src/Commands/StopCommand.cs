@@ -10,9 +10,9 @@ internal class StopCommand : CommandHandlerBase
 
     public override IEnumerable<string> UsageLines => ["stop"];
 
-    public override Task HandleAsync(string argList)
+    public override Task<bool> HandleAsync(string argList, CancellationToken cancellationToken)
     {
         Environment.Exit(0);
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 }

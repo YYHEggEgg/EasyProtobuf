@@ -5,7 +5,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    public override async Task HandleAsync(RsaGetKeyTypeOption o)
+    public override async Task<bool> HandleAsync(RsaGetKeyTypeOption o, CancellationToken cancellationToken)
     {
         var keyBin = await o.GetKeyBytesAsync();
         var keyType = RSAUtilBase.TreatRSAKeyType(keyBin);
@@ -15,5 +15,6 @@ internal partial class RsaCmd
         _logger.LogInformation("- Format: {format}", keyType.Format);
         _logger.LogInformation("- Padding: {padding}", keyType.Padding);
         _logger.LogInformation("- Private/Public: {desc}", keyActual.PrivateRsa == null ? "Public" : "Private");
+        return true;
     }
 }

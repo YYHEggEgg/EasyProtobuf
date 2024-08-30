@@ -25,13 +25,13 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                 "Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines (especially json data).</color>"
             ];
 
-        public override async Task HandleAsync(string argList)
+        public override async Task<bool> HandleAsync(string argList, CancellationToken cancellationToken)
         {
             var conf = Config.Global.CurrRegionCmds;
             if (conf.UseProtoCurr && conf.BasedProto == null)
             {
                 _logger.LogError($"This command cannot be used because 'config.json/CurrRegionCmd/BasedProto' is not configured yet.");
-                return;
+                return false;
             }
 
             var args = argList.Split(' ');
@@ -63,20 +63,20 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             {
                 _logger.LogError(jex, $"Decryption failed.");
                 _logger.LogWarning($"It may because you provided a bad-formatted json.");
-                return;
+                return false;
             }
             catch (KeyNotFoundException kex)
             {
                 _logger.LogError(kex, $"Decryption failed.");
                 _logger.LogWarning($"It may because you requested keys that haven't been placed in resources.");
-                return;
+                return false;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Decryption failed.");
                 _logger.LogWarning($"It may because the RSA key doesn't match " +
                     $"or you provided false query_cur_region json.");
-                return;
+                return false;
             }
             
             if (string.IsNullOrWhiteSpace(res)) res = "<empty content or json/protobuf format failure>";
@@ -91,6 +91,7 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                     $"You may check whether a correct RSA key is configured.");
             }
             await Tools.SetClipBoardAsync(res);
+            return true;
         }
 
         private CurrRegionCmdsAutoCompleteHandler _autoCmplHandler = new(true);
@@ -112,13 +113,13 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                 "Encrypt and sign query_cur_region content, by the key from resources.",
             ];
 
-        public override async Task HandleAsync(string argList)
+        public override async Task<bool> HandleAsync(string argList, CancellationToken cancellationToken)
         {
             var conf = Config.Global.CurrRegionCmds;
             if (conf.UseProtoCurr && conf.BasedProto == null)
             {
                 _logger.LogError($"This command cannot be used because 'config.json/CurrRegionCmd/BasedProto' is not configured yet.");
-                return;
+                return false;
             }
 
             var args = argList.Split(' ');
@@ -147,13 +148,13 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             {
                 _logger.LogError(jex, "Encryption failed.");
                 _logger.LogWarning($"It may because you provided a bad-formatted json.");
-                return;
+                return false;
             }
             catch (KeyNotFoundException kex)
             {
                 _logger.LogError(kex, $"Encryption failed.");
                 _logger.LogWarning($"It may because you requested keys that haven't been placed in resources.");
-                return;
+                return false;
             }
             catch (Exception ex)
             {
@@ -161,12 +162,12 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                 _logger.LogWarning($"It may because the json isn't valid." +
                     $"It's recommended to modify based on the result" +
                     $"from json protobuf from 'util dcurr' command.");
-                return;
+                return false;
             }
             if (res == null)
             {
                 _logger.LogError($"Protobuf serialization / JSON read failed (no exceptions thrown).");
-                return;
+                return false;
             }
 
             try
@@ -179,8 +180,9 @@ namespace YYHEggEgg.EasyProtobuf.Commands
                 _logger.LogError(ex, $"RSA encryption failed.");
                 _logger.LogWarning($"It may because you don't provide match key" +
                     $"in resources/ClientPri and resources/ServerPri.");
-                return;
+                return false;
             }
+            return true;
         }
 
         private CurrRegionCmdsAutoCompleteHandler _autoCmplHandler = new(false);

@@ -43,30 +43,30 @@ namespace YYHEggEgg.EasyProtobuf.Commands
             }
         }
 
-        public override async Task HandleAsync(ConvertOptions o)
+        public override async Task<bool> HandleAsync(ConvertOptions o, CancellationToken cancellationToken)
         {
             EasyInputResult res = EasyInput.TryPreProcess(o.Data ?? []);
             var outputType = GetOutputType(o, res);
-            if (outputType == EasyInputType.IdentifyFailure) return;
+            if (outputType == EasyInputType.IdentifyFailure) return false;
             byte[] bytes = res.ToByteArray(true);
             switch (outputType)
             {
                 case EasyInputType.Hex:
                     _logger.LogInformation("Converted to HEX format, handled {len} bytes.", bytes.Length);
                     await Tools.SetClipBoardAsync(Convert.ToHexString(bytes));
-                    break;
+                    return true;
                 case EasyInputType.Base64:
                     _logger.LogInformation("Converted to Base64 format, handled {len} bytes.", bytes.Length);
                     await Tools.SetClipBoardAsync(Convert.ToBase64String(bytes));
-                    break;
+                    return true;
                 case EasyInputType.Json:
                     var json = Tools.ConvertJsonString(Encoding.UTF8.GetString(bytes));
                     _logger.LogInformation("Converted to JSON format.");
                     await Tools.SetClipBoardAsync(json);
-                    break;
+                    return true;
                 default:
                     _logger.LogError("Input type is not supported!");
-                    break;
+                    return false;
             }
         }
     }

@@ -46,16 +46,16 @@ A simple Auto Completion is now supported! You can use `Tab` & `Shift+Tab` to sw
 
 It can fill out:
 
-- The command / subcommand names:
+- The command / subcommand names:  
   ![Command Name Completion](gifs/command_names.gif)
 
-- Proto name:
+- Proto name:  
   ![Proto Name Completion](gifs/proto_names.gif)
 
-- Command option names:
+- Command option names:  
   ![Command Options Completion](gifs/command_options.gif)
 
-- Place your cursor in a pair of `""` to trigger file path completion. Please notice that you should **add a path separator** to show you're trying to enumerate a directory, not the peers of the specified file/directory.
+- Place your cursor in a pair of `""` to trigger file path completion. Please notice that you should **add a path separator** to show you're trying to enumerate a directory, not the peers of the specified file/directory.  
   ![File Path Completion](gifs/file_path_complete.gif)
 
 

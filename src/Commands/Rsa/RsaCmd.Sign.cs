@@ -5,12 +5,13 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    public override async Task HandleAsync(RsaSignOption o)
+    public override async Task<bool> HandleAsync(RsaSignOption o, CancellationToken cancellationToken)
     {
         var rsa = o.GetRSAWorker();
         var rawdata = o.Data;
         var signature = rsa.SignData(rawdata, o.HashAlgorithm, o.Padding);
         _logger.LogInformation("Created signature for input {len} bytes.", rawdata.Length);
         await Tools.SetClipBoardAsync(Convert.ToBase64String(signature));
+        return true;
     }
 }

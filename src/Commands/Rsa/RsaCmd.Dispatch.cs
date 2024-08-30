@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using TextCopy;
 using XC.RSAUtil;
 using YYHEggEgg.Shell;
+using YYHEggEgg.Shell.Model;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
@@ -124,7 +125,7 @@ internal class RsaGetKeyTypeOption : RsaKeyInputOptionBase
 [Verb("keygen", false, HelpText = "Generate a RSA key.")]
 internal class RsaKeyGenOption
 {
-    [Value(0, Required = true, MetaName = "Key-Formats")]
+    [Value(0, Required = true, MetaName = "Key-Formats", HelpText = "The output key type you demand.")]
     public IEnumerable<string> OutputKeyType { get; set; }
     [Option("save-pub", MetaValue = "path", Required = true, HelpText = "The path to save the generated public key.")]
     public string SavePublicTo { get; set; }

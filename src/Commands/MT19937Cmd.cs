@@ -6,6 +6,7 @@ using YSFreedom.Common.Util;
 using CommandLine;
 using YYHEggEgg.Shell;
 using Microsoft.Extensions.Logging;
+using YYHEggEgg.Shell.Model;
 
 namespace YYHEggEgg.EasyProtobuf.Commands;
 
@@ -84,9 +85,9 @@ internal class MT19937Cmd : HasSubCommandsHandlerBase<MT19937DirectGenOption, MT
             "Notice: <color=Yellow>If you're using Windows Terminal, press Ctrl+Alt+V to paste data with multiple lines.</color>"
         ];
 
-    public override Task HandleAsync(MT19937FromRSAOption o)
+    public override Task<bool> HandleAsync(MT19937FromRSAOption o, CancellationToken cancellationToken)
     {
-        if (!o.ReportAvaliableOption(_logger)) return Task.CompletedTask;
+        if (!o.ReportAvaliableOption(_logger)) return Task.FromResult(false);
 
         uint key_id = o.KeyId;
         ulong seed = 0;
@@ -106,10 +107,10 @@ internal class MT19937Cmd : HasSubCommandsHandlerBase<MT19937DirectGenOption, MT
         }
 
         LogKeyFromSeed(o, seed);
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
-    public override Task HandleAsync(MT19937DirectGenOption o)
+    public override Task<bool> HandleAsync(MT19937DirectGenOption o, CancellationToken cancellationToken)
     {
         if (!ulong.TryParse(o.InputSeed, out ulong seed))
         {
@@ -119,7 +120,7 @@ internal class MT19937Cmd : HasSubCommandsHandlerBase<MT19937DirectGenOption, MT
         }
 
         LogKeyFromSeed(o, seed);
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     private void LogKeyFromSeed(MT19937GenKeyOptionBase mode, ulong seed)

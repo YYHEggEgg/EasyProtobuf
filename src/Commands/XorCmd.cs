@@ -43,21 +43,21 @@ internal class XorCmd : HasSubCommandsHandlerBase<XorOperateOption, XorSetDefaul
 
     private byte[]? default_key = null;
 
-    public override Task HandleAsync(XorSetDefaultKeyOption opt)
+    public override Task<bool> HandleAsync(XorSetDefaultKeyOption opt, CancellationToken cancellationToken)
     {
         default_key = EasyInput.TryPreProcess(opt.Key).ToByteArray();
         _logger.LogInformation("Successfully set default key: {length} bytes.", default_key.Length);
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
-    public override async Task HandleAsync(XorOperateOption opt)
+    public override async Task<bool> HandleAsync(XorOperateOption opt, CancellationToken cancellationToken)
     {
         byte[]? key = default_key;
         if (opt.Key != null && opt.Key.Any()) key = EasyInput.TryPreProcess(opt.Key).ToByteArray();
         if (key == null)
         {
             _logger.LogError("Please give the using XOR key by '-k' option, or set the default key with 'xor set-key' command.");
-            return;
+            return false;
         }
 
         var value = EasyInput.TryPreProcess(opt.Value).ToByteArray();
@@ -124,6 +124,7 @@ internal class XorCmd : HasSubCommandsHandlerBase<XorOperateOption, XorSetDefaul
                 }
             }
         }
+        return true;
     }
 
     /// <summary>

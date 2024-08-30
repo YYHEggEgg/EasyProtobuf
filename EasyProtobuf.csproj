@@ -25,9 +25,9 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="EggEgg.CSharp-Logger" Version="5.0.0-rc52" />
-    <PackageReference Include="EggEgg.Shell" Version="5.0.0-rc52-rc06" />
-    <PackageReference Include="EggEgg.XC.RSAUtil" Version="136.1.0" />
+    <PackageReference Include="EggEgg.CSharp-Logger" Version="5.0.0" />
+    <PackageReference Include="EggEgg.Shell" Version="5.0.0-rc15" />
+    <PackageReference Include="EggEgg.XC.RSAUtil" Version="136.1.1" />
     <PackageReference Include="Google.Protobuf" Version="3.27.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NJsonSchema" Version="11.0.1" />

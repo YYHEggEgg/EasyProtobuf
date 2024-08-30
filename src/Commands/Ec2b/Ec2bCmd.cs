@@ -41,24 +41,26 @@ internal class Ec2bCmd : HasSubCommandsHandlerBase<Ec2bGetKeyOption, Ec2bEncrypt
             ],
     };
 
-    public override async Task HandleAsync(Ec2bGetKeyOption o)
+    public override async Task<bool> HandleAsync(Ec2bGetKeyOption o, CancellationToken cancellationToken)
     {
         var read = EasyInput.TryPreProcess(o.Data ?? []);
         if (read.InputType != EasyInputType.Base64
             && read.InputType != EasyInputType.Hex)
         {
             _logger.LogError("The input type {type} isn't supported!", read.InputType);
-            return;
+            return false;
         }
         var hexkey = Convert.ToHexString(Ec2b.Decrypt(read.ToByteArray()));
         _logger.LogInformation("{bin}", hexkey);
         await Tools.SetClipBoardAsync(hexkey);
+        return true;
     }
 
-    public override async Task HandleAsync(Ec2bEncryptOption o)
+    public override async Task<bool> HandleAsync(Ec2bEncryptOption o, CancellationToken cancellationToken)
     {
         var hexseed = Convert.ToHexString(Ec2b.Encrypt(o.KeySeed));
         _logger.LogInformation("{bin}", hexseed);
         await Tools.SetClipBoardAsync(hexseed);
+        return true;
     }
 }

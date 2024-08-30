@@ -5,10 +5,10 @@ namespace YYHEggEgg.EasyProtobuf.Commands;
 
 internal partial class RsaCmd
 {
-    public override async Task HandleAsync(RsaKeyGenOption o)
+    public override async Task<bool> HandleAsync(RsaKeyGenOption o, CancellationToken cancellationToken)
     {
         var keyType = ParseKeyTypeStrings(o.OutputKeyType, true);
-        if (keyType == null) return;
+        if (keyType == null) return false;
 
         _logger.LogInformation("Generating key pair: Format: {}, Padding: {}, Size: {}", keyType.Format, keyType.Padding, o.KeySize);
         var newkeys = RsaKeyGenerator.GetKey(keyType, o.KeySize);
@@ -18,5 +18,6 @@ internal partial class RsaCmd
         var savePubPath = Path.GetFullPath(o.SavePublicTo);
         await File.WriteAllBytesAsync(savePubPath, newkeys.PublicKey);
         _logger.LogInformation("Public Key saved to path: '{savePubPath}'.", savePubPath);
+        return true;
     }
 }

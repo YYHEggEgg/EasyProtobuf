@@ -61,18 +61,18 @@ internal partial class RsaCmd
         return outputKeyType;
     }
 
-    public override async Task HandleAsync(RsaKeyConvertOption o)
+    public override async Task<bool> HandleAsync(RsaKeyConvertOption o, CancellationToken cancellationToken)
     {
         byte[] keyBin = await o.GetKeyBytesAsync();
 
         var inputKeyType = RSAUtilBase.TreatRSAKeyType(keyBin);
         var outputKeyType = ParseKeyTypeStrings(o.OutputKeyType);
-        if (outputKeyType == null) return;
+        if (outputKeyType == null) return false;
 
         _logger.LogInformation("Input key type: Format: {}, Padding: {}, IsPrivate: {}", inputKeyType.Format, inputKeyType.Padding, inputKeyType.IsPrivate);
         _logger.LogInformation("Output key type: Format: {}, Padding: {}, IsPrivate: {}", outputKeyType.Format, outputKeyType.Padding, outputKeyType.IsPrivate);
 
-        var res = RsaKeyConvert.Format(keyBin, inputKeyType, outputKeyType);
+        var res = RsaKeyConvert.Format(keyBin, outputKeyType);
         if (o.SaveTo != null)
         {
             var savePath = Path.GetFullPath(o.SaveTo);
@@ -89,5 +89,6 @@ internal partial class RsaCmd
             Tools.SetClipBoard(Encoding.UTF8.GetString(res));
             _logger.LogInformation("Key output to clipboard.");
         }
+        return true;
     }
 }

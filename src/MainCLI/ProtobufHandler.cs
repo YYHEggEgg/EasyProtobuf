@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System.Reflection;
+using CommandLine;
 using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 using YYHEggEgg.EasyProtobuf.Configuration;
@@ -6,6 +7,7 @@ using YYHEggEgg.EasyProtobuf.Util;
 using YYHEggEgg.Logger;
 using YYHEggEgg.Shell;
 using YYHEggEgg.Shell.Attributes;
+using YYHEggEgg.Shell.AutoCompletion;
 
 namespace YYHEggEgg.EasyProtobuf.MainCLI;
 
@@ -19,9 +21,9 @@ internal class ProtobufOption
 internal class ProtobufHandler : StandardCommandHandler<ProtobufOption>
 {
     public override string CommandName => nameof(ProtobufHandler);
-    public override string Description => throw new NotImplementedException();
+    public override string Description => "Basic Protobuf handler.";
 
-    public override async Task HandleAsync(ProtobufOption opt)
+    public override async Task<bool> HandleAsync(ProtobufOption opt, CancellationToken cancellationToken)
     {
         var protoname = opt.Protoname;
         Type? prototype = null;
@@ -36,7 +38,7 @@ internal class ProtobufHandler : StandardCommandHandler<ProtobufOption>
         if (prototype == null)
         {
             _logger.LogError("Proto type or command not found: '{protoname}'.", protoname);
-            return;
+            return false;
         }
         _logger.LogInformation("Well done! The proto exists.");
 
@@ -59,7 +61,7 @@ internal class ProtobufHandler : StandardCommandHandler<ProtobufOption>
                 {
                     _logger.LogInformation($"Deserialized message = null");
                     _logger.LogWarning("Serialization/Deserialization probably failed!");
-                    return;
+                    return false;
                 }
                 stroutput = JsonFormatter.Default.Format(msg);
                 _logger.LogInformation("Converted Json:{newline}{output}", Environment.NewLine, stroutput);
@@ -71,7 +73,7 @@ internal class ProtobufHandler : StandardCommandHandler<ProtobufOption>
                 {
                     _logger.LogInformation("Serialized message = null");
                     _logger.LogWarning("Serialization/Deserialization probably failed!");
-                    return;
+                    return false;
                 }
                 stroutput = Convert.ToBase64String(msg.ToByteArray());
                 _logger.LogInformation("Serialized Base64:{newline}{output}", Environment.NewLine, stroutput);
@@ -98,7 +100,41 @@ internal class ProtobufHandler : StandardCommandHandler<ProtobufOption>
                     unksize, msg.CalculateSize());
             }
         }
+        return true;
     }
+
+    #region Auto fill Protobuf names
+    private List<string>? _protoNames;
+    private static IEnumerable<string> MatchByName(IEnumerable<string> strings, string text, int index)
+    {
+        string start = text.Substring(0, index);
+        string end = text.Substring(index, text.Length - index);
+        return strings.Where((string str) => str.StartsWith(start) && str.EndsWith(end));
+    }
+
+    public override SuggestionResult GetSuggestions(string text, int index)
+    {
+        if (text.Contains(' '))
+        {
+            return new SuggestionResult();
+        }
+
+        if (_protoNames == null)
+        {
+            var conf = Config.Global.EasyProtobufProgram;
+            var protoNamespace = conf?.ProtoRootNamespace;
+            _protoNames = (from type in Assembly.GetExecutingAssembly().GetTypes()
+                           where type.IsAssignableTo(typeof(IMessage))
+                           where type.FullName != null && (protoNamespace == null || type.FullName.StartsWith(protoNamespace) == true)
+                           select type.FullName![(protoNamespace == null ? 0 : protoNamespace.Length + 1)..]).ToList();
+        }
+        IEnumerable<string> enumerable = MatchByName(_protoNames, text, index);
+        return new SuggestionResult
+        {
+            Suggestions = enumerable.ToList()
+        };
+    }
+    #endregion
 
     #region Protobuf Operations
     public static Type FindProtoMessageType(string protoname)

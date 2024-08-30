@@ -24,7 +24,6 @@ internal sealed class EasyProtobufCLI : AutoScanMainCommandLine
         Config.Global.RestoreHistoryOnRestart ? $"{HistoryFileName}{(string.IsNullOrEmpty(TargetProtobufVersion) ? "" : $".{TargetProtobufVersion}")}" : null;
 
     private ProtobufHandler _protobufOpHandler = new();
-    private List<string>? _protoNames;
     public readonly BaseLogger? CommandHistoryLogger;
 
     public EasyProtobufCLI()
@@ -45,21 +44,7 @@ internal sealed class EasyProtobufCLI : AutoScanMainCommandLine
         }
     }
 
-    protected override IEnumerable<string>? GetAllowedGeneralOperations()
-    {
-        if (_protoNames == null)
-        {
-            var conf = Config.Global.EasyProtobufProgram;
-            var protoNamespace = conf?.ProtoRootNamespace;
-            _protoNames = (from type in Assembly.GetExecutingAssembly().GetTypes()
-                           where type.IsAssignableTo(typeof(IMessage))
-                           where type.FullName != null && (protoNamespace == null || type.FullName.StartsWith(protoNamespace) == true)
-                           select type.FullName![(protoNamespace == null ? 0 : protoNamespace.Length + 1)..]).ToList();
-        }
-        return _protoNames;
-    }
-
-    protected override CommandHandlerBase? GetGeneralOperationHandler()
+    protected override CommandHandlerBase? RefreshGeneralOperationHandler()
     {
         return _protobufOpHandler;
     }
